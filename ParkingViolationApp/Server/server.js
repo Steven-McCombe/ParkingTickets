@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({ path: '../.env' }); 
 const User = require('../models/user');
 const authRoutes = require('../routes/auth');
 const violationRoutes = require('../routes/violations');
