@@ -14,4 +14,12 @@ const userSchema = new mongoose.Schema({
     licensePlates: [licensePlateSchema]  // Updated to use the licensePlateSchema
 });
 
-module.exports = mongoose.model('User', userSchema);
+userSchema.pre('save', async function (next) {
+    if (this.isModified('passwordHash')) {
+        this.passwordHash = await bcrypt.hash(this.passwordHash, 10);
+    }
+    next();
+});
+
+const User = mongoose.model('User', userSchema);
+module.exports = User;

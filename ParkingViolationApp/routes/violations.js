@@ -1,26 +1,11 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-dotenv.config();
-const User = require('../models/user');
-const authRoutes = require('./routes/auth');
+const axios = require('axios');
+const User = require('../models/user'); 
+const authMiddleware = require('../middleware/authMiddleware');  // Adjust the path as necessary
 
-// ... other setup code ...
+const router = express.Router();
 
-
-
-
-
-const app = express();
-app.use(bodyParser.json());
-app.use('/auth', authRoutes);
-
-const connectionString = process.env.MONGODB_URI;
-console.log(connectionString);  
-mongoose.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true });
-
-app.post('/getViolations', async (req, res) => {
+router.post('/getViolations', authMiddleware, async (req, res) => {
     const { userId } = req.body;
     try {
         const user = await User.findById(userId);
@@ -40,6 +25,4 @@ app.post('/getViolations', async (req, res) => {
     }
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+module.exports = router;
