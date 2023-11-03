@@ -13,7 +13,11 @@ router.post('/register', async (req, res) => {
         if (existingUser) {
             return res.status(400).send('User already exists');
         }
-        const user = new User({ username, email, passwordHash: password });
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);  // 10 is the number of rounds
+
+        const user = new User({ username, email, passwordHash: hashedPassword });
         await user.save();
         res.status(201).send('User registered successfully');
     } catch (error) {
@@ -21,6 +25,7 @@ router.post('/register', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
 
 // User Login Route
 router.post('/login', async (req, res) => {
