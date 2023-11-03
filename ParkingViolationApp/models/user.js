@@ -1,5 +1,6 @@
 // models/user.js
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const licensePlateSchema = new mongoose.Schema({
     licensePlate: { type: String, required: true },
