@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+// ./src/screens/AddVehicleScreen.js
+import React, { useState , useContext} from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import AddVehicleStyles from '../styles/AddVehicleStyles.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { stateOptions, plateTypeOptions } from '../data/data';
 import { REACT_APP_SERVER_URL } from '../config';
 import FlashMessage, { showMessage } from "react-native-flash-message";
-
+import { VehiclesContext } from '../contexts/VehiclesContext';  
 
 const AddVehicleScreen = ({ navigation }) => {
   const [nickName, setNickName] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
   const [state, setState] = useState('');
   const [licenseType, setLicenseType] = useState('');
+  const { vehicles, setVehicles } = useContext(VehiclesContext);
 
   const validateInput = (value, options) => {
     return options.some(option => option.value === value);
@@ -52,10 +54,12 @@ const AddVehicleScreen = ({ navigation }) => {
 
       const data = await response.json();
       const storedVehicles = await AsyncStorage.getItem('vehicles');
+      // This block updates the locally stored vehicles and the context state
       const updatedVehicles = storedVehicles
         ? [...JSON.parse(storedVehicles), data]
         : [data];
-      await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));  
+      await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
+      setVehicles(updatedVehicles); 
       showMessage({
         message: "Success",
         description: "Vehicle added successfully!",
