@@ -1,11 +1,11 @@
 // src/screens/AuthScreen.js
-import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Input, Button } from 'react-native-elements';
-import  Icon  from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import AuthStyles from '../styles/AuthStyles.js';
 import { REACT_APP_SERVER_URL} from '../config';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
 
 
 const serverUrl = REACT_APP_SERVER_URL;
@@ -17,6 +17,19 @@ const AuthScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
 
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await AsyncStorage.getItem('userToken');
+      console.log("token: " + token)
+      if(token){
+        // Navigate to main app screen
+        navigation.navigate('MainScreen');
+      }
+    };
+
+    checkToken();
+  }, [navigation]);
+
   const handleAuth = async () => {
     const url = isLogin ? `${REACT_APP_SERVER_URL}/auth/login` : `${REACT_APP_SERVER_URL}/auth/register`;
     const payload = {
@@ -24,7 +37,7 @@ const AuthScreen = ({ navigation }) => {
       password,
       ...(isLogin ? {} : { username }),  // Include the username only if registering
     };
-  
+
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -33,30 +46,23 @@ const AuthScreen = ({ navigation }) => {
         },
         body: JSON.stringify(payload),
       });
-  
+
       if (!response.ok) {
         // Handle error (e.g., show an error message to the user)
         console.error('Network response was not ok', response.statusText);
-        // Check if the response is JSON
-        if (response.headers.get('Content-Type').includes('application/json')) {
-          const data = await response.json();
-          console.error(data);
-        } else {
-          const text = await response.text();
-          console.error(text);
-        }
         return;
       }
-  
+
       const data = await response.json();
-      // Handle success (e.g., navigate to another screen)
-      console.log(data);
-  
+      // Store the token in AsyncStorage
+      await AsyncStorage.setItem('userToken', data.token);
+      // Navigate to another screen
+      navigation.navigate('MainScreen');  // Replace 'MainScreen' with the name of your main screen
+
     } catch (error) {
       console.error('Error:', error);
     }
   };
-  
 
   return (
     <View style={AuthStyles.container}>
