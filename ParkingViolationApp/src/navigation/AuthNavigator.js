@@ -2,8 +2,10 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import AuthScreen from '../screens/AuthScreen';
-import MainScreen from '../screens/MainScreen';  // Import MainScreen
+import MainScreen from '../screens/MainScreen';
+import ProfileScreen from '../screens/ProfileScreen'; 
 import FlashMessage from "react-native-flash-message";
+
 const Stack = createStackNavigator();
 
 const AuthNavigator = () => {
@@ -15,9 +17,10 @@ const AuthNavigator = () => {
         options={{ headerShown: false }} 
       />
       <Stack.Screen 
-        name="MainScreen"  // Define MainScreen in your navigator
-        component={MainScreen}
-      />
+  name="ProfileScreen" 
+  component={ProfileScreen}
+  options={{ headerShown: false }}  // Optional: Hide the header
+/>
     </Stack.Navigator>
     
   );

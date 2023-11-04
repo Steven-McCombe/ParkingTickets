@@ -3,7 +3,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import AuthNavigator from './src/navigation/AuthNavigator';  // adjust the import path if necessary
 import { SafeAreaView, StatusBar } from 'react-native';
-
+import AuthProvider from './src/contexts/AuthContext';
 
 
 const App = () => {
@@ -11,7 +11,9 @@ const App = () => {
     <NavigationContainer>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={{ flex: 1 }}>
+        <AuthProvider>
         <AuthNavigator />
+        </AuthProvider>
       </SafeAreaView>
     </NavigationContainer>
   );

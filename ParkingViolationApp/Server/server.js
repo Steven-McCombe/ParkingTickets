@@ -8,6 +8,7 @@ const authRoutes = require('../routes/auth');
 const violationRoutes = require('../routes/violations');
 const testRoutes = require('../routes/testRoutes');
 const vehicleRoutes = require('../routes/vehicleRoutes');
+const userRoutes = require('../routes/userRoutes');
 
 const app = express();
 app.use(bodyParser.json());
@@ -15,6 +16,7 @@ app.use('/auth', authRoutes);
 app.use('/violations', violationRoutes);
 app.use('/test', testRoutes);
 app.use('/vehicles', vehicleRoutes);
+app.use('/users', userRoutes);
 
 const connectionString = process.env.MONGODB_URI;
 console.log(connectionString);  
