@@ -1,6 +1,6 @@
 // src/screens/ProfileScreen.js
 import React, { useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, View, Text, Button } from 'react-native';
+import { ActivityIndicator, View, Text, TouchableOpacity, Button } from 'react-native';
 import { REACT_APP_SERVER_URL } from '../config';
 import { Card } from 'react-native-elements';
 import ProfileStyles from '../styles/ProfileStyles';
@@ -9,6 +9,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { showMessage } from "react-native-flash-message";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getUserData} from "../../utils/getUserData"
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const ProfileScreen = ({ navigation }) => {
   const authContext = useContext(AuthContext);
@@ -153,39 +154,50 @@ console.log("user: " + user)
 
   return (
     <View style={ProfileStyles.container}>
-              <Text>Profile Screen</Text>
-        {userData && (
-            <View>
-                <Text>Username: {userData.username}</Text>
-                <Text>Email: {userData.email}</Text>
-                {userData.licensePlates.map(plate => (
-                    <Card key={plate._id}>
-                        <Card.Title>{plate.nickName} - {plate.licensePlate}</Card.Title>
-                        <Card.Divider/>
-                        <Text>License Type: {plate.licenseType}</Text>
-                        <Text>State: {plate.state}</Text>
-                        <Button title="Edit" onPress={() => navigation.navigate('EditVehicleScreen', { plate })} />
-                        <Button title="Delete" onPress={() => deleteVehicle(plate._id)} />
-                        {/* ... other actions or info ... */}
-                    </Card>
-                ))}
-            </View>
+        <Text style={ProfileStyles.boldText}>Profile Screen</Text>
+        {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+            userData && (
+                <View>
+                    <Text style={ProfileStyles.boldText}>Username: {userData.username}</Text>
+                    <Text style={ProfileStyles.regularText}>Email: {userData.email}</Text>
+                    {userData.licensePlates.map(plate => (
+                        <Card key={plate._id} containerStyle={ProfileStyles.cardContainer}>
+                            <Card.Title>{plate.nickName} - {plate.licensePlate}</Card.Title>
+                            <Card.Divider />
+                            <Text style={ProfileStyles.regularText}>License Type: {plate.licenseType}</Text>
+                            <Text style={ProfileStyles.regularText}>State: {plate.state}</Text>
+                            <View style={ProfileStyles.buttonContainer}>
+                                <TouchableOpacity
+                                    style={ProfileStyles.iconButton}
+                                    onPress={() => navigation.navigate('EditVehicleScreen', { plate })}
+                                >
+                                    <Icon name="edit" size={24} color="#000" />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={ProfileStyles.iconButton}
+                                    onPress={() => deleteVehicle(plate._id)}
+                                >
+                                    <Icon name="trash" size={24} color="#000" />
+                                </TouchableOpacity>
+                            </View>
+                        </Card>
+                    ))}
+                </View>
+            )
         )}
-        {loading ? 
-            <ActivityIndicator size="large" color="#0000ff" /> 
-        : 
-            vehicles.map(vehicle => (
-                <Card key={vehicle._id}>
-                    <Card.Title>{vehicle.nickName} - {vehicle.licensePlate}</Card.Title>
-                    <Card.Divider/>
-                </Card>
-            ))
-        }
-        <Button title="Add Vehicle" onPress={() => navigation.navigate('AddVehicleScreen')} />
+        <Button title="Add Vehicle" onPress={() => navigation.navigate('AddVehicleScreen')} style={ProfileStyles.addButton}/>
         <Button title="Logout" onPress={() => logout()} />
     </View>
 );
-
 };
 
 export default ProfileScreen;
+
+
+
+
+
+
+

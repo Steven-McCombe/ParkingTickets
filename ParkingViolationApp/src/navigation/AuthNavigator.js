@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AuthScreen from '../screens/AuthScreen';
 import MainScreen from '../screens/MainScreen';
 import ProfileScreen from '../screens/ProfileScreen'; 
+import AddVehicleScreen from '../screens/AddVehicleScreen';
 import FlashMessage from "react-native-flash-message";
 
 const Stack = createStackNavigator();
@@ -21,6 +22,10 @@ const AuthNavigator = () => {
   component={ProfileScreen}
   options={{ headerShown: false }}  // Optional: Hide the header
 />
+<Stack.Screen name="AddVehicleScreen" 
+component={AddVehicleScreen}
+options={{ headerShown: false }}  />
+
     </Stack.Navigator>
     
   );
