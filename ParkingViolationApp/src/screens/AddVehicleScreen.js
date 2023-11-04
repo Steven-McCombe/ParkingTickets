@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { ScrollView, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import AddVehicleStyles from '../styles/AddVehicleStyles.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { stateOptions, plateTypeOptions } from '../data/data';
@@ -51,6 +51,11 @@ const AddVehicleScreen = ({ navigation }) => {
       }
 
       const data = await response.json();
+      const storedVehicles = await AsyncStorage.getItem('vehicles');
+      const updatedVehicles = storedVehicles
+        ? [...JSON.parse(storedVehicles), data]
+        : [data];
+      await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));  
       showMessage({
         message: "Success",
         description: "Vehicle added successfully!",
@@ -68,7 +73,7 @@ const AddVehicleScreen = ({ navigation }) => {
 
 
   return (
-    <View style={AddVehicleStyles.container}>
+    <ScrollView style={AddVehicleStyles.container}>
       <TextInput
         style={AddVehicleStyles.input}
         placeholder='Nickname (e.g., Johns Van)'
@@ -96,7 +101,7 @@ const AddVehicleScreen = ({ navigation }) => {
       <TouchableOpacity onPress={addVehicle} style={AddVehicleStyles.button}>
         <Text style={AddVehicleStyles.buttonText}>Add Vehicle</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 

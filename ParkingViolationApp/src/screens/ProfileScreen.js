@@ -1,6 +1,6 @@
 // src/screens/ProfileScreen.js
 import React, { useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, View, Text, TouchableOpacity, Button } from 'react-native';
+import { ActivityIndicator, ScrollView, View, Text, TouchableOpacity, Button } from 'react-native';
 import { REACT_APP_SERVER_URL } from '../config';
 import { Card } from 'react-native-elements';
 import ProfileStyles from '../styles/ProfileStyles';
@@ -153,15 +153,13 @@ console.log("user: " + user)
   }
 
   return (
-    <View style={ProfileStyles.container}>
+    <ScrollView style={ProfileStyles.container}>
         <Text style={ProfileStyles.boldText}>Profile Screen</Text>
         {loading ? (
             <ActivityIndicator size="large" color="#0000ff" />
         ) : (
             userData && (
                 <View>
-                    <Text style={ProfileStyles.boldText}>Username: {userData.username}</Text>
-                    <Text style={ProfileStyles.regularText}>Email: {userData.email}</Text>
                     {userData.licensePlates.map(plate => (
                         <Card key={plate._id} containerStyle={ProfileStyles.cardContainer}>
                             <Card.Title>{plate.nickName} - {plate.licensePlate}</Card.Title>
@@ -189,7 +187,7 @@ console.log("user: " + user)
         )}
         <Button title="Add Vehicle" onPress={() => navigation.navigate('AddVehicleScreen')} style={ProfileStyles.addButton}/>
         <Button title="Logout" onPress={() => logout()} />
-    </View>
+    </ScrollView>
 );
 };
 
