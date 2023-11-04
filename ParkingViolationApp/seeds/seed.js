@@ -20,15 +20,18 @@ const users = [
         email: 'user1@example.com',
         passwordHash: bcrypt.hashSync('password', 10),
         licensePlates: [
-            { licensePlate: 'KNP1409', licenseType: 'PAS', state: 'NY' },
-            { licensePlate: 'JPY7482', licenseType: 'PAS', state: 'NY' }
+            { nickName:"Black Car", licensePlate: 'KNP1409', licenseType: 'PAS', state: 'NY' },
+            { nickName: "White Van", licensePlate: 'JPY7482', licenseType: 'PAS', state: 'NY' }
         ]
     },
     {
         username: 'user2',
         email: 'user2@example.com',
         passwordHash: bcrypt.hashSync('password', 10),
-        licensePlates: []
+        licensePlates: [
+          { nickName:"White Car", licensePlate: 'KNP1408', licenseType: 'PAS', state: 'NY' },
+          { nickName: "Blue Van", licensePlate: 'JPY7483', licenseType: 'PAS', state: 'NY' }
+        ]
     },
  
 ];

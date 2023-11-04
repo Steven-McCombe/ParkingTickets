@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const licensePlateSchema = new mongoose.Schema({
+    nickName: { type: String, required: true },
     licensePlate: { type: String, required: true },
     licenseType: { type: String, required: true },
     state: { type: String, required: true }
