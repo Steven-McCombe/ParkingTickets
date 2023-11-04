@@ -1,3 +1,5 @@
+// ./routes/auth.js
+
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -9,29 +11,25 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
     try {
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
         if (existingUser) {
             return res.status(400).send('User already exists');
         }
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);  // 10 is the number of rounds
-
-        const user = new User({ username, email, passwordHash: hashedPassword });
+        // Create new user
+        const user = new User({ username, email: email.toLowerCase(), passwordHash: password });
         await user.save();
         res.status(201).send('User registered successfully');
     } catch (error) {
-        console.error(error);
         res.status(500).send('Server error');
     }
 });
-
 
 // User Login Route
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: email.toLowerCase() });
         if (!user) {
             return res.status(404).send('User not found');
         }
@@ -42,7 +40,6 @@ router.post('/login', async (req, res) => {
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.json({ token });
     } catch (error) {
-        console.error(error);
         res.status(500).send('Server error');
     }
 });

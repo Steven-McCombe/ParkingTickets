@@ -24,6 +24,12 @@ const users = [
             { licensePlate: 'JPY7482', licenseType: 'PAS', state: 'NY' }
         ]
     },
+    {
+        username: 'user2',
+        email: 'user2@example.com',
+        passwordHash: bcrypt.hashSync('password', 10),
+        licensePlates: []
+    },
  
 ];
 
