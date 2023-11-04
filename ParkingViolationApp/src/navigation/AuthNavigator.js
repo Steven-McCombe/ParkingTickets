@@ -3,7 +3,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import AuthScreen from '../screens/AuthScreen';
 import MainScreen from '../screens/MainScreen';  // Import MainScreen
-
+import FlashMessage from "react-native-flash-message";
 const Stack = createStackNavigator();
 
 const AuthNavigator = () => {
@@ -19,6 +19,7 @@ const AuthNavigator = () => {
         component={MainScreen}
       />
     </Stack.Navigator>
+    
   );
 };
 
