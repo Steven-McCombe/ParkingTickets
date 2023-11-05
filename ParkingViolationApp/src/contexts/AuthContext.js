@@ -41,15 +41,15 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error('Logout error:', error);
         }
-      };
-
+    };
       const value = {
         user,
         setUser,
         token,
         setToken,
         loading,
-        logout,  // provide logout function via context
+        logout, 
+
       };
 
     return (

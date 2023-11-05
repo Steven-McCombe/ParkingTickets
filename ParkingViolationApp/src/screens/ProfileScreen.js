@@ -21,46 +21,54 @@ const ProfileScreen = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const { logout } = useContext(AuthContext);
 
+  useEffect(() => {
+    fetchVehicles();
+}, []);
+
   const fetchVehicles = async () => {
+    console.log('Fetching vehicles...'); 
     if (!authContext.user || !token) {
         setError('User not logged in');
         setLoading(false);
         return;
     }
     try {
-      const userId = authContext.user._id;  
-      const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/getVehicles`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ userId }),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        showMessage({
-          message: "Error",
-          description: errorText,
-          type: "danger",
-          autoHide: true,
-          duration: 3000,
-        });
-        console.error('Failed to fetch vehicles:', errorText);
-        setLoading(false);
-        return;
-      }
+        const userId = authContext.user._id;
+        console.log('userId:', userId);  // Log the userId to the console
+        // Modify the URL to include userId as a query parameter
+        const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/getVehicles?userId=${userId}`, {
+            method: 'GET',  // Keep the method as GET
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
 
-      const data = await response.json();
-      setVehicles(data);
-      setLoading(false);
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            showMessage({
+                message: "Error",
+                description: errorText,
+                type: "danger",
+                autoHide: true,
+                duration: 3000,
+            });
+            console.error('Failed to fetch vehicles:', errorText);
+            setLoading(false);
+            return;
+        }
+
+        const data = await response.json();
+        setVehicles(data);
+        setLoading(false);
     } catch (error) {
-      console.error('Error fetching vehicles:', error);
-      setLoading(false);
-      setError('Failed to fetch vehicles');
+        console.error('Error fetching vehicles:', error);
+        setLoading(false);
+        setError('Failed to fetch vehicles');
     }
-  };
+};
+
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -69,25 +77,20 @@ const ProfileScreen = ({ navigation }) => {
     };
 
     fetchUserData();
-    fetchVehicles();
-  }, []);
-
-  useEffect(() => {
-    if (vehicles) {
-      console.log('Updated vehicles:', vehicles);
-      setLoading(false);
+    if (authContext.user) {
+      fetchVehicles();
     }
-  }, [vehicles]);
+  }, [authContext.user]);
 
   const deleteVehicle = async (vehicleId) => {
     try {
-        const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/deleteVehicle`, {
+        const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/deleteVehicle/${vehicleId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ vehicleId }),
+            body: JSON.stringify({ userId: authContext.user._id }),
         });
 
         if (!response.ok) {
@@ -128,12 +131,12 @@ const ProfileScreen = ({ navigation }) => {
     <ScrollView style={ProfileStyles.container}>
         <Text style={ProfileStyles.boldText}>Profile Screen</Text>
         {loading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
+           <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
             vehicles && (
               <View>
               {vehicles.map(vehicle => (
-                  <Card key={vehicle.licensePlate} containerStyle={ProfileStyles.cardContainer}>
+              <Card key={vehicle.licensePlate} containerStyle={ProfileStyles.cardContainer}>
                       <Card.Title>{vehicle.nickName} - {vehicle.licensePlate}</Card.Title>
                       <Card.Divider />
                       <Text style={ProfileStyles.regularText}>License Type: {vehicle.licenseType}</Text>
@@ -147,7 +150,7 @@ const ProfileScreen = ({ navigation }) => {
                           </TouchableOpacity>
                           <TouchableOpacity
                               style={ProfileStyles.iconButton}
-                              onPress={() => deleteVehicle(vehicle.licensePlate)}
+                              onPress={() => deleteVehicle(vehicle._id)}
                           >
                               <Icon name="trash" size={24} color="#000" />
                           </TouchableOpacity>
@@ -159,6 +162,8 @@ const ProfileScreen = ({ navigation }) => {
         )}
         <Button title="Add Vehicle" onPress={() => navigation.navigate('AddVehicleScreen')} style={ProfileStyles.addButton}/>
         <Button title="Logout" onPress={logout} />
+        <Button title="Refresh" onPress={fetchVehicles} />
+
     </ScrollView>
 );
 };

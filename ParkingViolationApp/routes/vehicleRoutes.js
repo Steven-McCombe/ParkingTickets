@@ -26,8 +26,7 @@ router.post('/addVehicle', authMiddleware, async (req, res) => {
 
 // Route to get all vehicles of a user
 router.get('/getVehicles', authMiddleware, async (req, res) => {
-    const { userId } = req.body;
-
+    const { userId } = req.query;
     try {
         const user = await User.findById(userId);
         if (!user) return res.status(404).send('User not found');

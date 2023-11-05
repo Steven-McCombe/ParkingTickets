@@ -58,8 +58,7 @@ const AddVehicleScreen = ({ navigation }) => {
       const updatedVehicles = storedVehicles
         ? [...JSON.parse(storedVehicles), data]
         : [data];
-      await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
-      setVehicles(updatedVehicles); 
+    setVehicles(updatedVehicles);
       showMessage({
         message: "Success",
         description: "Vehicle added successfully!",
