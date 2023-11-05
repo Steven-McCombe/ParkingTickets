@@ -49,26 +49,26 @@ const AddVehicleScreen = ({ navigation }) => {
 
   const addVehicle = async () => {
     if (!validateInput(state, stateOptions) || !validateInput(licenseType, plateTypeOptions)) {
-      showMessage({
-        message: "Invalid input",
-        description: "Please enter valid state and license type values.",
-        type: "danger",
-      });
-      return;
+        showMessage({
+            message: "Invalid input",
+            description: "Please enter valid state and license type values.",
+            type: "danger",
+        });
+        return;  // Ensure you return early here to exit the function if the input is invalid
     }
 
-    const token = await AsyncStorage.getItem('userToken');
     const userId = JSON.parse(await AsyncStorage.getItem('user'))._id;
+    const token = await AsyncStorage.getItem('userToken');  // Get the token from AsyncStorage
 
     try {
-      const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/addVehicle`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ userId, nickName, licensePlate, licenseType, state }),
-      });
+        const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/addVehicle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`  // Include the token in the Authorization header
+            },
+            body: JSON.stringify({ user: userId, nickName, licensePlate, licenseType, state }),  // Include the body here within the fetch statement
+        });
 
       if (!response.ok) {
         const errorText = await response.text();

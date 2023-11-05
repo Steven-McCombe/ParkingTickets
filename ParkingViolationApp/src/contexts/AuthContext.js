@@ -2,7 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { VehiclesContext } from './VehiclesContext';
-
+import { REACT_APP_SERVER_URL } from '../config';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -11,7 +11,27 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const { resetVehicles } = useContext(VehiclesContext);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const { setVehicles } = useContext(VehiclesContext);
 
+    const fetchUserVehicles = async (userId) => {
+        try {
+            const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/getVehicles?userId=${userId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            const data = await response.json();
+            setVehicles(data);
+        } catch (error) {
+            console.error('Failed to fetch user vehicles:', error);
+        }
+    };
+    
+    useEffect(() => {
+        if (user && token) {
+            fetchUserVehicles(user._id);
+        }
+    }, [user, token]);
 
     useEffect(() => {
         const loadInitialData = async () => {

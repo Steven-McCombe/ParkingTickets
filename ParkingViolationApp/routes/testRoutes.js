@@ -1,6 +1,8 @@
 // routes/testRoutes.js
 const express = require('express');
 const User = require('../models/user'); 
+const Vehicle = require('../models/vehicle');
+const Violation = require('../models/violation');
 
 const router = express.Router();
 

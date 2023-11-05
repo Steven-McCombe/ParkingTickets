@@ -2,18 +2,12 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-const licensePlateSchema = new mongoose.Schema({
-    nickName: { type: String, required: true },
-    licensePlate: { type: String, required: true },
-    licenseType: { type: String, required: true },
-    state: { type: String, required: true }
-});
-
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
-    licensePlates: [licensePlateSchema]  // Updated to use the licensePlateSchema
+    vehicles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle' }],
+    violations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Violation' }],
 });
 
 userSchema.pre('save', async function (next) {
