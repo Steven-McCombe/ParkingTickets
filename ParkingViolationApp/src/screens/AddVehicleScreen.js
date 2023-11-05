@@ -14,7 +14,34 @@ const AddVehicleScreen = ({ navigation }) => {
   const [state, setState] = useState('');
   const [licenseType, setLicenseType] = useState('');
   const { vehicles, setVehicles } = useContext(VehiclesContext);
- 
+  const { addNewVehicleToState } = useContext(VehiclesContext);
+
+  const fetchUpdatedVehicles = async () => {
+    const token = await AsyncStorage.getItem('userToken');
+    const userId = JSON.parse(await AsyncStorage.getItem('user'))._id;
+  
+    try {
+      const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/getVehicles?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        return;
+      }
+  
+      const updatedVehicles = await response.json();
+      setVehicles(updatedVehicles);  // Update the vehicles state in VehiclesContext
+  
+    } catch (error) {
+   console.log('Error fetching vehicles:', error);
+    }
+  };
+  
 
   const validateInput = (value, options) => {
     return options.some(option => option.value === value);
@@ -54,11 +81,14 @@ const AddVehicleScreen = ({ navigation }) => {
       }
 
       const data = await response.json();
+      addNewVehicleToState(data); 
       showMessage({
           message: "Success",
           description: "Vehicle added successfully!",
           type: "success",
       });
+      console.log("vehicle added")
+      await fetchUpdatedVehicles();
       navigation.goBack();
   } catch (error) {
       showMessage({

@@ -15,19 +15,19 @@ const AuthNavigator = () => {
       <Stack.Screen 
         name="Auth" 
         component={AuthScreen} 
-        options={{ headerShown: false }} 
+        options={{ headerShown: true }} 
       />
       <Stack.Screen 
   name="ProfileScreen" 
   component={ProfileScreen}
-  options={{ headerShown: false }}  // Optional: Hide the header
+  options={{ headerShown: true }}  // Optional: Hide the header
 />
 <Stack.Screen name="AddVehicleScreen" 
 component={AddVehicleScreen}
-options={{ headerShown: false }}  />
+options={{ headerShown: true }}  />
 <Stack.Screen name="MainScreen" 
 component={MainScreen}
-options={{ headerShown: false }}  />
+options={{ headerShown: true }}  />
 
     </Stack.Navigator>
     

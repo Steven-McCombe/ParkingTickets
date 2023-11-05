@@ -38,7 +38,7 @@ const AuthScreen = ({ navigation }) => {
       const token = await AsyncStorage.getItem('userToken');
       console.log('token: ' + token);
       if (token) {
-        // Navigate to MainNavigator
+        // Navigate 
         setIsLoggedIn(true); 
         navigation.navigate('ProfileScreen');
       }
@@ -97,6 +97,12 @@ const AuthScreen = ({ navigation }) => {
               console.error('User data is undefined');
           }
             
+            // Wait for AsyncStorage to store the token and user data before proceeding
+            await Promise.all([
+                AsyncStorage.setItem('userToken', data.token),
+                AsyncStorage.setItem('user', JSON.stringify(userData))
+            ]);
+            
             showMessage({
                 message: isLogin ? "Login successful!" : "Registration successful!",
                 type: "success",
@@ -120,6 +126,7 @@ const AuthScreen = ({ navigation }) => {
         console.error('Error:', error);
     }
 };
+
 
 
   const fetchUserData = async () => {

@@ -113,7 +113,7 @@ useEffect(() => {
                 autoHide: true,
                 duration: 3000,
             });
-            console.error('Failed to delete vehicle:', errorText);
+            console.error('Failed to delete vehicle:' + vehicleId , errorText);
             return;
         }
 
@@ -142,10 +142,13 @@ useEffect(() => {
     <ScrollView style={ProfileStyles.container}>
         <Text style={ProfileStyles.boldText}>Profile Screen</Text>
         {loading ? (
-           <ActivityIndicator size="large" color="#0000ff" />
-            ) : (
-            vehicles && (
-              <View>
+   <ActivityIndicator size="large" color="#0000ff" />
+) : (
+  vehicles.length === 0 ? (
+    <Text>No vehicles found.</Text>
+  ) : (
+    vehicles && (
+      <View>
               {vehicles.map(vehicle => (
               <Card key={vehicle.licensePlate} containerStyle={ProfileStyles.cardContainer}>
                       <Card.Title>{vehicle.nickName} - {vehicle.licensePlate}</Card.Title>
@@ -169,8 +172,9 @@ useEffect(() => {
                   </Card>
               ))}
           </View>
-            )
-        )}
+    )
+    )
+  )}
         <Button title="Add Vehicle" onPress={() => navigation.navigate('AddVehicleScreen')} style={ProfileStyles.addButton}/>
         <Button title="Logout" onPress={logout} />
         <Button title="Refresh" onPress={fetchVehicles} />
