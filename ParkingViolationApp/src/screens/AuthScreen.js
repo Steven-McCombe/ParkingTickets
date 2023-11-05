@@ -5,10 +5,10 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import AuthStyles from '../styles/AuthStyles.js';
 import { REACT_APP_SERVER_URL} from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState ,useContext } from 'react';
 import * as Yup from 'yup';
 import { showMessage } from "react-native-flash-message";
-
+import { AuthContext } from '../contexts/AuthContext';
 
 const serverUrl = REACT_APP_SERVER_URL;
 console.log("serverUrl: " + serverUrl)
@@ -31,6 +31,7 @@ const AuthScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const { setIsLoggedIn } = useContext(AuthContext);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -38,6 +39,7 @@ const AuthScreen = ({ navigation }) => {
       console.log('token: ' + token);
       if (token) {
         // Navigate to MainNavigator
+        setIsLoggedIn(true); 
         navigation.navigate('ProfileScreen');
       }
     };
@@ -81,6 +83,7 @@ const AuthScreen = ({ navigation }) => {
             
             if (data.token) {
                 await AsyncStorage.setItem('userToken', data.token);
+                console.log("Token has been set" + data.token)
             } else {
                 console.error('Token is undefined');
             }
@@ -89,6 +92,7 @@ const AuthScreen = ({ navigation }) => {
             const userData = await fetchUserData();
             if (userData) {
               await AsyncStorage.setItem('user', JSON.stringify(userData));
+              console.log("UserData has been set" + JSON.stringify(userData))
           } else {
               console.error('User data is undefined');
           }
@@ -99,6 +103,7 @@ const AuthScreen = ({ navigation }) => {
                 autoHide: true,
                 duration: 3000,
             });
+            setIsLoggedIn(true); 
             navigation.navigate('ProfileScreen');
         }
     } catch (error) {

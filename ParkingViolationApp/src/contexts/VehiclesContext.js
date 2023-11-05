@@ -1,5 +1,5 @@
 // src/contexts/VehiclesContext.js
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const VehiclesContext = createContext();
@@ -7,31 +7,18 @@ export const VehiclesContext = createContext();
 export const VehiclesProvider = ({ children }) => {
     const [vehicles, setVehicles] = useState([]);
 
-    useEffect(() => {
-        const loadInitialVehicles = async () => {
-            try {
-                const storedVehicles = await AsyncStorage.getItem('vehicles');
-                if (storedVehicles) {
-                    setVehicles(JSON.parse(storedVehicles));
-                }
-            } catch (error) {
-                console.error('Failed to load initial vehicles:', error);
-            }
-        };
-        loadInitialVehicles();
-    }, []);
 
-    const updateVehicles = async (newVehicles) => {
+    const resetVehicles = async () => {
         try {
-            await AsyncStorage.setItem('vehicles', JSON.stringify(newVehicles));
-            setVehicles(newVehicles);
+            await AsyncStorage.removeItem('vehicles');  // Ensure vehicles are cleared from AsyncStorage
+            setVehicles([]);
         } catch (error) {
-            console.error('Failed to update vehicles:', error);
+            console.error('Error resetting vehicles:', error);
         }
     };
 
     return (
-        <VehiclesContext.Provider value={{ vehicles, setVehicles: updateVehicles }}>
+        <VehiclesContext.Provider value={{ vehicles, setVehicles, resetVehicles,  }}>
             {children}
         </VehiclesContext.Provider>
     );

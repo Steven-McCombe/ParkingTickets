@@ -13,21 +13,25 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { VehiclesContext } from '../contexts/VehiclesContext';
 
 const ProfileScreen = ({ navigation }) => {
+  const { user, token, loading: authLoading } = useContext(AuthContext);
   const authContext = useContext(AuthContext);
-  const { vehicles, setVehicles } = useContext(VehiclesContext);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { token } = useContext(AuthContext);
   const [userData, setUserData] = useState(null);
+  const { vehicles, setVehicles } = useContext(VehiclesContext);
   const { logout } = useContext(AuthContext);
 
-  useEffect(() => {
-    fetchVehicles();
-}, []);
+  
+
+  console.log('Vehicles ====:', vehicles);
 
   const fetchVehicles = async () => {
-    console.log('Fetching vehicles...'); 
+    console.log('Fetching vehicles...');
+    console.log('authContext.user:', authContext.user);
+    console.log('token:', token);
+    
     if (!authContext.user || !token) {
+        console.log('User not logged in or token not available');
         setError('User not logged in');
         setLoading(false);
         return;
@@ -35,14 +39,12 @@ const ProfileScreen = ({ navigation }) => {
     try {
         const userId = authContext.user._id;
         console.log('userId:', userId);  // Log the userId to the console
-        // Modify the URL to include userId as a query parameter
         const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/getVehicles?userId=${userId}`, {
             method: 'GET',  // Keep the method as GET
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-
         });
         if (!response.ok) {
             const errorText = await response.text();
@@ -59,6 +61,7 @@ const ProfileScreen = ({ navigation }) => {
         }
 
         const data = await response.json();
+        console.log('Fetched data:', data);  // Log fetched data
         setVehicles(data);
         setLoading(false);
     } catch (error) {
@@ -66,21 +69,29 @@ const ProfileScreen = ({ navigation }) => {
         setLoading(false);
         setError('Failed to fetch vehicles');
     }
-};
-
-
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
         const data = await getUserData();
         setUserData(data);
     };
-
     fetchUserData();
-    if (authContext.user) {
+}, []);
+
+useEffect(() => {
+  if (!authLoading && user && token) {
       fetchVehicles();
-    }
-  }, [authContext.user]);
+  }
+}, [authLoading, user, token]);
+
+
+
+  // New useEffect to log updated vehicles state
+// Inside ProfileScreen component
+useEffect(() => {
+  console.log('ProfileScreen rendered');
+}, [vehicles]);
 
   const deleteVehicle = async (vehicleId) => {
     try {

@@ -14,6 +14,7 @@ const AddVehicleScreen = ({ navigation }) => {
   const [state, setState] = useState('');
   const [licenseType, setLicenseType] = useState('');
   const { vehicles, setVehicles } = useContext(VehiclesContext);
+ 
 
   const validateInput = (value, options) => {
     return options.some(option => option.value === value);
@@ -53,19 +54,13 @@ const AddVehicleScreen = ({ navigation }) => {
       }
 
       const data = await response.json();
-      const storedVehicles = await AsyncStorage.getItem('vehicles');
-      // This block updates the locally stored vehicles and the context state
-      const updatedVehicles = storedVehicles
-        ? [...JSON.parse(storedVehicles), data]
-        : [data];
-    setVehicles(updatedVehicles);
       showMessage({
-        message: "Success",
-        description: "Vehicle added successfully!",
-        type: "success",
+          message: "Success",
+          description: "Vehicle added successfully!",
+          type: "success",
       });
       navigation.goBack();
-    } catch (error) {
+  } catch (error) {
       showMessage({
         message: "Error",
         description: error.toString(),

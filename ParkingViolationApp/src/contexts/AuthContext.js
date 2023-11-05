@@ -1,6 +1,7 @@
 // src/contexts/AuthContext.js
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { VehiclesContext } from './VehiclesContext';
 
 export const AuthContext = createContext();
 
@@ -8,6 +9,8 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { resetVehicles } = useContext(VehiclesContext);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
 
     useEffect(() => {
@@ -26,22 +29,27 @@ export const AuthProvider = ({ children }) => {
             } catch (error) {
                 console.error('Failed to load initial data:', error);
             } finally {
-                setLoading(false); 
+                setLoading(false);  // Ensure loading is set to false in all cases
             }
         };
-        loadInitialData();
-    }, []);
+        if (isLoggedIn) {
+            loadInitialData();
+        }
+    }, [isLoggedIn]); 
+    
 
     const logout = async () => {
         try {
-          await AsyncStorage.removeItem('userToken');
-          await AsyncStorage.removeItem('user');
-          setToken(null);
-          setUser(null);
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('user');
+            resetVehicles();  // This should clear the vehicles state
+            setToken(null);
+            setUser(null);
         } catch (error) {
-          console.error('Logout error:', error);
+            console.error('Logout error:', error);
         }
     };
+
       const value = {
         user,
         setUser,
@@ -49,6 +57,7 @@ export const AuthProvider = ({ children }) => {
         setToken,
         loading,
         logout, 
+        setIsLoggedIn,
 
       };
 
