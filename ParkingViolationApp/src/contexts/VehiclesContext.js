@@ -7,22 +7,12 @@ export const VehiclesContext = createContext();
 export const VehiclesProvider = ({ children }) => {
   const [vehicles, setVehicles] = useState([]);
 
-  const addNewVehicleToState = async (newVehicle) => {
-    try {
-        const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/addVehicle`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ userId: user._id, ...newVehicle }),
-        });
-        const data = await response.json();
-        setVehicles(prevVehicles => [...prevVehicles, data]);
-    } catch (error) {
-        console.error('Failed to add new vehicle:', error);
-    }
+const addNewVehicleToState = (newVehicle) => {
+    console.log('addNewVehicleToState called with', newVehicle);
+    setVehicles(prevVehicles => [...prevVehicles, newVehicle]);
 };
+
+
     const resetVehicles = async () => {
         try {
             await AsyncStorage.removeItem('vehicles');  // Ensure vehicles are cleared from AsyncStorage

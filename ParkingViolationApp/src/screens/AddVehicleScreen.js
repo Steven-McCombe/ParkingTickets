@@ -13,8 +13,8 @@ const AddVehicleScreen = ({ navigation }) => {
   const [licensePlate, setLicensePlate] = useState('');
   const [state, setState] = useState('');
   const [licenseType, setLicenseType] = useState('');
-  const { vehicles, setVehicles } = useContext(VehiclesContext);
-  const { addNewVehicleToState } = useContext(VehiclesContext);
+  const { vehicles, setVehicles, addNewVehicleToState } = useContext(VehiclesContext);
+
 
   const fetchUpdatedVehicles = async () => {
     const token = await AsyncStorage.getItem('userToken');
@@ -48,6 +48,7 @@ const AddVehicleScreen = ({ navigation }) => {
   };
 
   const addVehicle = async () => {
+    console.log('addVehicle called with', {nickName, licensePlate, licenseType, state});
     if (!validateInput(state, stateOptions) || !validateInput(licenseType, plateTypeOptions)) {
         showMessage({
             message: "Invalid input",

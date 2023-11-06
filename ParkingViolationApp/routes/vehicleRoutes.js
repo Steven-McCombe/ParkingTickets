@@ -11,39 +11,58 @@ const router = express.Router();
 router.post('/addVehicle', authMiddleware, async (req, res) => {
     const { nickName, licensePlate, licenseType, state, user: userId } = req.body;
 
+    console.log('Received request to add vehicle:', req.body);  // Log the request body
+
     try {
         // Check if a vehicle with the same license plate and user already exists
         const existingVehicle = await Vehicle.findOne({ licensePlate, user: userId });
         if (existingVehicle) {
-            return res.status(400).send('You have already added a vehicle with this license plate.');
+            console.error('Vehicle already exists:', existingVehicle);  // Log the existing vehicle
+            return res.status(400).json({ error: 'You have already added a vehicle with this license plate.' });
         }
 
         const newVehicle = new Vehicle({ nickName, licensePlate, licenseType, state, user: userId });
         await newVehicle.save();
 
-        // Update User model logic here (if needed)
+        // Update User model to include the new vehicle
+        const user = await User.findById(userId);
+        if (!user) {
+            console.error('User not found');  // Log the error
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.vehicles.push(newVehicle._id);  // Add the new vehicle's ID to the user's vehicle array
+        await user.save();
 
         res.json(newVehicle);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
+        console.error(error);  // Log any errors that occur
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
-// Route to get all vehicles of a user
+
+/// Route to get all vehicles of a user
 router.get('/getVehicles', authMiddleware, async (req, res) => {
     const { userId } = req.query;
     console.log('userId:', userId);  // Log the userId to the console
+
+    if (!userId) {
+        return res.status(400).send('User ID is required');
+    }
+
     try {
         const vehicles = await Vehicle.find({ user: userId });
         console.log('vehicles:', vehicles);  // Log the result of the query to the console
-        if (!vehicles || vehicles.length === 0) return res.status(404).send('Vehicles not found');
+        
+        if (vehicles.length === 0) return res.status(404).send('Vehicles not found');
+        
         res.json(vehicles);
     } catch (error) {
         console.error(error);
-        res.status(500).send('Server error');
+        res.status(500).send(`Server error: ${error.message}`);
     }
 });
+
 
 // Route to update a vehicle
 router.put('/updateVehicle/:vehicleId', authMiddleware, async (req, res) => {

@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user'); 
 const Vehicle = require('../models/vehicle');
 const Violation = require('../models/violation');
-
+const authMiddleware = require('../middleware/authMiddleware'); 
 
 const router = express.Router();
 
@@ -45,6 +45,12 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         res.status(500).send('Server error');
     }
+});
+
+router.post('/validate', authMiddleware, (req, res) => {
+    // If this point is reached, the token is valid
+    console.log("Token is valid")
+    res.sendStatus(200);  // OK
 });
 
 module.exports = router;

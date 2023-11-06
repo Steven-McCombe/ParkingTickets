@@ -36,16 +36,35 @@ const AuthScreen = ({ navigation }) => {
   useEffect(() => {
     const checkToken = async () => {
       const token = await AsyncStorage.getItem('userToken');
-      console.log('token: ' + token);
+      console.log('token:', token);
       if (token) {
-        // Navigate 
-        setIsLoggedIn(true); 
-        navigation.navigate('ProfileScreen');
+        try {
+          const response = await fetch(`${REACT_APP_SERVER_URL}/auth/validate`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+  
+          // Check the response status
+          if (response.ok) {
+            console.log('Token is valid');
+            setIsLoggedIn(true);
+            navigation.navigate('ProfileScreen');
+          } else {
+            const errorText = await response.text();
+            console.error('Failed to validate token:', errorText);
+          }
+        } catch (error) {
+          console.error('Error validating token:', error);
+        }
       }
     };
   
     checkToken();
   }, [navigation]);
+  
 
   const handleAuth = async () => {
     const url = isLogin ? `${REACT_APP_SERVER_URL}/auth/login` : `${REACT_APP_SERVER_URL}/auth/register`;
@@ -82,27 +101,23 @@ const AuthScreen = ({ navigation }) => {
             console.log('Response data:', data);  // Log the entire response data to check its structure
             
             if (data.token) {
-                await AsyncStorage.setItem('userToken', data.token);
                 console.log("Token has been set" + data.token)
             } else {
                 console.error('Token is undefined');
             }
+            // Wait for AsyncStorage to store the token before proceeding
+            await AsyncStorage.setItem('userToken', data.token);
 
-            // Call fetchUserData to fetch the user data
+            // Now that the token is set in AsyncStorage, call fetchUserData to fetch the user data
             const userData = await fetchUserData();
             if (userData) {
-              await AsyncStorage.setItem('user', JSON.stringify(userData));
-              console.log("UserData has been set" + JSON.stringify(userData))
-          } else {
-              console.error('User data is undefined');
-          }
-            
-            // Wait for AsyncStorage to store the token and user data before proceeding
-            await Promise.all([
-                AsyncStorage.setItem('userToken', data.token),
-                AsyncStorage.setItem('user', JSON.stringify(userData))
-            ]);
-            
+                console.log("UserData has been set" + JSON.stringify(userData));
+            } else {
+                console.error('User data is undefined');
+            }
+
+            // Now set the user data in AsyncStorage
+            await AsyncStorage.setItem('user', JSON.stringify(userData)); 
             showMessage({
                 message: isLogin ? "Login successful!" : "Registration successful!",
                 type: "success",
@@ -129,33 +144,35 @@ const AuthScreen = ({ navigation }) => {
 
 
 
-  const fetchUserData = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        throw new Error('No token found');
-      }
-      const response = await fetch(`${REACT_APP_SERVER_URL}/users/me`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to fetch user data:', errorText);
-        return;
-      }
-  
-      const userData = await response.json();
-      console.log('User data:', userData);
-      return userData;  // Optionally save this data to state or AsyncStorage, or return it to be handled elsewhere
-    } catch (error) {
-      console.error('Error fetching user data:', error);
+const fetchUserData = async () => {
+  try {
+    const token = await AsyncStorage.getItem('userToken');  // Retrieve token from AsyncStorage
+    if (!token) {
+      throw new Error('No token found');
     }
-  };
+    const response = await fetch(`${REACT_APP_SERVER_URL}/users/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to fetch user data:', errorText);
+      return;
+    }
+
+    const userData = await response.json();
+    console.log('User data:', userData);
+    return userData;  // Optionally save this data to state or AsyncStorage, or return it to be handled elsewhere
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+  }
+};
+
+
   
 
   return (
