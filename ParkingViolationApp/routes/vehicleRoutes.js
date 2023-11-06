@@ -5,6 +5,7 @@ const Vehicle = require('../models/vehicle');
 const Violation = require('../models/violation');
 const authMiddleware = require('../middleware/authMiddleware');  // Adjust the path as necessary
 const { fetchViolationsByPlate } = require('../utils/fetchViolations');
+const { cleanSummonsImageUrl } = require('../helpers/cleanURL');
 
 
 const router = express.Router();
@@ -72,8 +73,8 @@ async function fetchViolationsForVehicle(licensePlate, vehicleId, userId) {
                     county: violationData.county,
                     issuingAgency: violationData.issuing_agency,
                     summonsImage: {
-                        url: violationData.summons_image.url, // Accessing the url property of the summons_image object
-                        description: violationData.summons_image.description, // Accessing the description property
+                        url: cleanSummonsImageUrl(violationData.summons_image.url), // Clean the URL before saving
+                        description: violationData.summons_image.description,
                       },
                 });
                 const savedViolation = await newViolation.save(); // Save and get the saved instance
