@@ -124,12 +124,6 @@ useEffect(() => {
                       <View style={ProfileStyles.buttonContainer}>
                           <TouchableOpacity
                               style={ProfileStyles.iconButton}
-                              onPress={() => navigation.navigate('EditVehicleScreen', { vehicle })}
-                          >
-                              <Icon name="edit" size={24} color="#000" />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                              style={ProfileStyles.iconButton}
                               onPress={() => deleteVehicle(vehicle._id)}
                           >
                               <Icon name="trash" size={24} color="#000" />
