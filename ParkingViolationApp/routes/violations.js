@@ -25,4 +25,18 @@ router.post('/getViolations', authMiddleware, async (req, res) => {
     }
 });
 
+router.get('/violations', async (req, res) => {
+    const { vehicleId } = req.query;
+    try {
+      let query = {};
+      if (vehicleId) {
+        query.vehicle = vehicleId; // Assuming 'vehicle' is the field name in the database
+      }
+      const violations = await Violation.find(query);
+      res.json(violations);
+    } catch (error) {
+      res.status(500).send('Server error');
+    }
+  });
+
 module.exports = router;

@@ -1,15 +1,22 @@
-// ./src/componets/ViolationsComponent.js
-
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text, Button, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { fetchViolations, requestViolationsUpdate } from '../../utils/violationsService';
 
-const ViolationsComponent = () => {
+const ViolationsComponent = ({vehicleId}) => {
   const [violations, setViolations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const getViolationsData = async () => {
-    const data = await fetchViolations();
-    setViolations(data);
+    try {
+      setLoading(true);
+      const data = await fetchViolations(vehicleId);
+      setViolations(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -17,20 +24,51 @@ const ViolationsComponent = () => {
   }, []);
 
   const handleUpdate = async () => {
-    await requestViolationsUpdate();
-    getViolationsData();
+    try {
+      setLoading(true);
+      await requestViolationsUpdate();
+      await getViolationsData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const renderItem = ({ item }) => (
+    <View style={styles.violationItem}>
+      <Text>{item.plate} - {item.violation}</Text>
+    </View>
+  );
+
   return (
-    <View>
+    <View style={styles.container}>
       <Button title="Update Violations" onPress={handleUpdate} />
-      {violations.map(violation => (
-        <View key={violation.unique_key}>
-          <Text>{violation.plate} - {violation.violation}</Text>
-        </View>
-      ))}
+      {loading && <ActivityIndicator />}
+      {error && <Text style={styles.error}>{error}</Text>}
+      {!loading && !violations.length && <Text>No violations found.</Text>}
+      <FlatList
+  data={violations}
+  renderItem={renderItem}
+  keyExtractor={(item) => item._id} // Assuming _id is unique for each violation
+/>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  violationItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  error: {
+    color: 'red',
+  },
+});
 
 export default ViolationsComponent;

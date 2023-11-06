@@ -124,6 +124,7 @@ useEffect(() => {
             <ListItem 
                 key={vehicle.licensePlate} 
                 containerStyle={ProfileStyles.listItemContainer}
+                onPress={() => navigation.navigate('MainScreen', { vehicleId: vehicle._id })}
             >
                 <ListItem.Content>
                     <ListItem.Title style={ProfileStyles.listItemTitle}>
@@ -161,6 +162,7 @@ useEffect(() => {
   />
 </TouchableOpacity>
     <Button title="Logout" onPress={logout} />
+    <Button title="Main" onPress={() => navigation.navigate('MainScreen')} />
     </SafeAreaView>
 );
 };
