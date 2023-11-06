@@ -1,8 +1,8 @@
 // src/screens/ProfileScreen.js
 import React, { useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, View, Text, TouchableOpacity, Button } from 'react-native';
+import { ActivityIndicator, ScrollView, RefreshControl, View, Text, TouchableOpacity, Button, SafeAreaView} from 'react-native';
 import { REACT_APP_SERVER_URL } from '../config';
-import { Card } from 'react-native-elements';
+import { Card, ListItem } from 'react-native-elements';
 import ProfileStyles from '../styles/ProfileStyles';
 import { UserContext } from '../contexts/UserContext'; 
 import { AuthContext } from '../contexts/AuthContext';
@@ -105,8 +105,13 @@ useEffect(() => {
 };
 
   return (
-    <ScrollView style={ProfileStyles.container}>
-        <Text style={ProfileStyles.boldText}>Profile Screen</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+    <ScrollView
+    style={ProfileStyles.container}
+    refreshControl={
+        <RefreshControl refreshing={loading} onRefresh={getVehicles} />
+    }
+>
         {loading ? (
    <ActivityIndicator size="large" color="#0000ff" />
 ) : (
@@ -114,32 +119,49 @@ useEffect(() => {
     <Text>No vehicles found.</Text>
   ) : (
     vehicles && (
-      <View>
-              {vehicles.map(vehicle => (
-              <Card key={vehicle.licensePlate} containerStyle={ProfileStyles.cardContainer}>
-                      <Card.Title>{vehicle.nickName} - {vehicle.licensePlate}</Card.Title>
-                      <Card.Divider />
-                      <Text style={ProfileStyles.regularText}>License Type: {vehicle.licenseType}</Text>
-                      <Text style={ProfileStyles.regularText}>State: {vehicle.state}</Text>
-                      <View style={ProfileStyles.buttonContainer}>
-                          <TouchableOpacity
-                              style={ProfileStyles.iconButton}
-                              onPress={() => deleteVehicle(vehicle._id)}
-                          >
-                              <Icon name="trash" size={24} color="#000" />
-                          </TouchableOpacity>
-                      </View>
-                  </Card>
-              ))}
-          </View>
+        <View>
+        {vehicles.map(vehicle => (
+            <ListItem 
+                key={vehicle.licensePlate} 
+                containerStyle={ProfileStyles.listItemContainer}
+            >
+                <ListItem.Content>
+                    <ListItem.Title style={ProfileStyles.listItemTitle}>
+                        {vehicle.nickName}
+                    </ListItem.Title>
+                    <ListItem.Subtitle style={ProfileStyles.listItemSubtitle}>
+                        {vehicle.licensePlate}
+                    </ListItem.Subtitle>
+                    <Text style={ProfileStyles.listItemDetails}>
+                        License Type: {vehicle.licenseType}, State: {vehicle.state}
+                    </Text>
+                </ListItem.Content>
+                <Icon 
+                    name="trash" 
+                    type="font-awesome" 
+                    onPress={() => deleteVehicle(vehicle._id)} 
+                    style={ProfileStyles.deleteIcon}
+                />
+            </ListItem>
+        ))}
+    </View>
     )
     )
   )}
-        <Button title="Add Vehicle" onPress={() => navigation.navigate('AddVehicleScreen')} style={ProfileStyles.addButton}/>
-        <Button title="Logout" onPress={logout} />
-        <Button title="Refresh" onPress={() => fetchVehicles(authContext.user._id, token)} />
 
     </ScrollView>
+<TouchableOpacity
+  style={ProfileStyles.addVehicleButton}
+  onPress={() => navigation.navigate('AddVehicleScreen')}
+>
+  <Icon
+    name="plus"
+    type="font-awesome-5"
+    style={ProfileStyles.addVehicleIcon}
+  />
+</TouchableOpacity>
+    <Button title="Logout" onPress={logout} />
+    </SafeAreaView>
 );
 };
 
