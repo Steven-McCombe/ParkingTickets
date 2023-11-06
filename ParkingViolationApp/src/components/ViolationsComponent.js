@@ -21,7 +21,7 @@ const ViolationsComponent = ({vehicleId}) => {
 
   useEffect(() => {
     getViolationsData();
-  }, []);
+  }, [vehicleId]);
 
   const handleUpdate = async () => {
     try {
@@ -37,10 +37,10 @@ const ViolationsComponent = ({vehicleId}) => {
 
   const renderItem = ({ item }) => (
     <View style={styles.violationItem}>
-      <Text>{item.plate} - {item.violation}</Text>
+      <Text>{item.summonsNumber} - {item.issueDate}</Text> 
     </View>
   );
-
+  
   return (
     <View style={styles.container}>
       <Button title="Update Violations" onPress={handleUpdate} />

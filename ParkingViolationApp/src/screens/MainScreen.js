@@ -10,8 +10,7 @@ const MainScreen = ({ navigation, route }) => {
   // or use it in a fetch call to get the violations for this vehicle.
 
   return (
-    <View>
-      {/* Pass the vehicleId to ViolationsComponent as a prop */}
+    <View style={{ flex: 1 }}>
       <ViolationsComponent vehicleId={vehicleId} />
     </View>
   );
