@@ -54,9 +54,12 @@ router.get('/getVehicles', authMiddleware, async (req, res) => {
         const vehicles = await Vehicle.find({ user: userId });
         console.log('vehicles:', vehicles);  // Log the result of the query to the console
         
-        if (vehicles.length === 0) return res.status(404).send('Vehicles not found');
         
-        res.json(vehicles);
+            if (vehicles.length === 0) {
+                res.json([]);  // Return an empty array if no vehicles found
+            } else {
+                res.json(vehicles);
+            }
     } catch (error) {
         console.error(error);
         res.status(500).send(`Server error: ${error.message}`);
