@@ -4,7 +4,6 @@ const User = require('../models/user');
 const Vehicle = require('../models/vehicle');
 const Violation = require('../models/violation');
 const authMiddleware = require('../middleware/authMiddleware');  // Adjust the path as necessary
-const { fetchViolationsByPlate } = require('../utils/fetchViolations');
 const { cleanSummonsImageUrl } = require('../helpers/cleanURL');
 
 
@@ -36,9 +35,6 @@ router.post('/addVehicle', authMiddleware, async (req, res) => {
         user.vehicles.push(newVehicle._id);  // Add the new vehicle's ID to the user's vehicle array
         await user.save();
 
-        // After adding a new vehicle, fetch and store violations
-        fetchViolationsForVehicle(licensePlate, newVehicle._id);
-
         res.json(newVehicle);
     } catch (error) {
         console.error(error);  // Log any errors that occur
@@ -47,55 +43,56 @@ router.post('/addVehicle', authMiddleware, async (req, res) => {
 });
 
 // Service function to fetch and store violations
-async function fetchViolationsForVehicle(licensePlate, vehicleId, userId) {
-    try {
-        const violations = await fetchViolationsByPlate(licensePlate); // Fetch violations from NYC API
+// async function fetchViolationsForVehicle(licensePlate, vehicleId, userId) {
+//     try {
+//         const violations = await fetchViolationsByPlate(licensePlate); // Fetch violations from NYC API
         
-        // Process violations synchronously to ensure user is updated correctly
-        for (const violationData of violations) {
-            // Check if violation already exists
-            const existingViolation = await Violation.findOne({ summonsNumber: violationData.summons_number });
-            if (!existingViolation) {
-                // Save new violation if it doesn't exist
-                const newViolation = new Violation({
-                    vehicle: vehicleId,
-                    summonsNumber: violationData.summons_number,
-                    issueDate: violationData.issue_date,
-                    violationTime: violationData.violation_time,
-                    violation: violationData.violation,
-                    fineAmount: violationData.fine_amount,
-                    penaltyAmount: violationData.penalty_amount,
-                    interestAmount: violationData.interest_amount,
-                    reductionAmount: violationData.reduction_amount,
-                    paymentAmount: violationData.payment_amount,
-                    amountDue: violationData.amount_due,
-                    precinct: violationData.precinct,
-                    county: violationData.county,
-                    issuingAgency: violationData.issuing_agency,
-                    summonsImage: {
-                        url: cleanSummonsImageUrl(violationData.summons_image.url), // Clean the URL before saving
-                        description: violationData.summons_image.description,
-                      },
-                });
-                const savedViolation = await newViolation.save(); // Save and get the saved instance
+//         // Process violations synchronously to ensure user is updated correctly
+//         for (const violationData of violations) {
+//             // Check if violation already exists
+//             const existingViolation = await Violation.findOne({ summonsNumber: violationData.summons_number });
+//             if (!existingViolation) {
+//                 // Save new violation if it doesn't exist
+//                 const newViolation = new Violation({
+//                     user: userId,
+//                     vehicle: vehicleId,
+//                     summonsNumber: violationData.summons_number,
+//                     issueDate: violationData.issue_date,
+//                     violationTime: violationData.violation_time,
+//                     violation: violationData.violation,
+//                     fineAmount: violationData.fine_amount,
+//                     penaltyAmount: violationData.penalty_amount,
+//                     interestAmount: violationData.interest_amount,
+//                     reductionAmount: violationData.reduction_amount,
+//                     paymentAmount: violationData.payment_amount,
+//                     amountDue: violationData.amount_due,
+//                     precinct: violationData.precinct,
+//                     county: violationData.county,
+//                     issuingAgency: violationData.issuing_agency,
+//                     summonsImage: {
+//                         url: cleanSummonsImageUrl(violationData.summons_image.url), // Clean the URL before saving
+//                         description: violationData.summons_image.description,
+//                       },
+//                 });
+//                 const savedViolation = await newViolation.save(); // Save and get the saved instance
 
-                // Update User document with the new violation ID
-                const userUpdateResult = await User.updateOne(
-                    { _id: userId },
-                    { $push: { violations: savedViolation._id } },
-                    { new: true } // Get the updated document
-                );
+//                 // Update User document with the new violation ID
+//                 const userUpdateResult = await User.updateOne(
+//                     { _id: userId },
+//                     { $push: { violations: savedViolation._id } },
+//                     { new: true } // Get the updated document
+//                 );
 
-                // Check if the user was updated successfully
-                if (userUpdateResult.nModified === 0) {
-                    console.error('User not updated, no document found with the provided ID, or no change was made.');
-                }
-            }
-            }
-                } catch (error) {
-                console.error('Error fetching or updating violations:', error);
-                 }
-}
+//                 // Check if the user was updated successfully
+//                 if (userUpdateResult.nModified === 0) {
+//                     console.error('User not updated, no document found with the provided ID, or no change was made.');
+//                 }
+//             }
+//             }
+//                 } catch (error) {
+//                 console.error('Error fetching or updating violations:', error);
+//                  }
+// }
 
 /// Route to get all vehicles of a user
 router.get('/getVehicles', authMiddleware, async (req, res) => {

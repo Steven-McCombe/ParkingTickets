@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ViolationSchema = new Schema({
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
     vehicle: {
         type: Schema.Types.ObjectId,
         ref: 'Vehicle',
@@ -10,7 +15,6 @@ const ViolationSchema = new Schema({
     summonsNumber: {
         type: String,
         required: true,
-        unique: true,
     },
     issueDate: {
         type: Date,

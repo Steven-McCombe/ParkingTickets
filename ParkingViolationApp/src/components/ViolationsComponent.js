@@ -14,9 +14,11 @@ const toggleExpand = (id) => {
 
 
   const getViolationsData = async () => {
+    console.log('getViolationsData called ./components/ViolationsComponent.js');
+    const userId = await AsyncStorage.getItem('userId');
     try {
       setLoading(true);
-      const data = await fetchViolations(vehicleId);
+      const data = await fetchViolations(vehicleId, userId);
       setViolations(data);
     } catch (err) {
       setError(err.message);
@@ -30,6 +32,7 @@ const toggleExpand = (id) => {
   }, [vehicleId]);
 
   const handleUpdate = async () => {
+    console.log('handleUpdate called ./components/ViolationsComponent.js');
     try {
       setLoading(true);
       await requestViolationsUpdate();

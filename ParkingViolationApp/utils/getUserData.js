@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const getUserData = async () => {
+    console.log('getUserData called');
     try {
         const userJson = await AsyncStorage.getItem('user');
         if (userJson !== null) {

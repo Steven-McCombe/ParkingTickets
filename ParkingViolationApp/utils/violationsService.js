@@ -2,7 +2,8 @@
 import {REACT_APP_SERVER_URL} from "../src/config";
 
 // Updated fetchViolations function to accept vehicleId
-export const fetchViolations = async (vehicleId) => {
+export const fetchViolations = async (vehicleId, userId) => {
+  console.log("fetchViolations called with vehicleId:", vehicleId);
   try {
     const url = vehicleId
       ? `${REACT_APP_SERVER_URL}/violations/violations?vehicleId=${vehicleId}` // Add a query parameter for vehicleId
@@ -22,6 +23,7 @@ export const fetchViolations = async (vehicleId) => {
 };
   
   export const requestViolationsUpdate = async () => {
+    console.log("requestViolationsUpdate called");
     try {
       const response = await fetch(`${REACT_APP_SERVER_URL}/update-violations`);
       if (!response.ok) {

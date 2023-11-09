@@ -3,6 +3,7 @@ import { REACT_APP_SERVER_URL } from '../src/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const fetchVehicles = async (userId, token) => {  // Accept token as a second argument
+    console.log('fetchVehicles called with userId:', userId);
     try {
         const response = await fetch(`${REACT_APP_SERVER_URL}/vehicles/getVehicles?userId=${userId}`, {
             method: 'GET',

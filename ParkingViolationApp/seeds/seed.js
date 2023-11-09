@@ -213,5 +213,18 @@ const seedDatabase = async () => {
   }
 };
 
-seedDatabase();
+const  DropDatabase = async () => {
+  try {
+    await User.deleteMany();
+    await Vehicle.deleteMany();
+    await Violation.deleteMany();
+  } catch (error) {
+
+  } finally {
+    await mongoose.connection.close();
+    console.log('Connection closed');
+  }
+}
+
+DropDatabase();
 
