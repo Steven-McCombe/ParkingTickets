@@ -11,6 +11,7 @@ import {getUserData} from "../../utils/getUserData";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { VehiclesContext } from '../contexts/VehiclesContext';
 import { fetchVehicles } from '../../utils/fetchVehicles';
+import { SwipeListView } from 'react-native-swipe-list-view';
 
 const ProfileScreen = ({ navigation }) => {
   const { user, token, loading: authLoading } = useContext(AuthContext);
@@ -21,15 +22,24 @@ const ProfileScreen = ({ navigation }) => {
   const { vehicles, setVehicles } = useContext(VehiclesContext);
   const { logout } = useContext(AuthContext);
 
-  
+  const renderHiddenItem = (data, rowMap) => (
+    <View style={ProfileStyles.rowBack}>
+      <TouchableOpacity
+        style={[ProfileStyles.backRightBtn, ProfileStyles.backRightBtnRight]}
+        onPress={() => deleteVehicle(data.item._id)}
+      >
+        <Text style={ProfileStyles.backTextWhite}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   const VehicleItem = ({ vehicle }) => (
     <TouchableOpacity 
       style={ProfileStyles.listItemContainer}
       onPress={() => navigation.navigate('MainScreen', { vehicleId: vehicle._id })}
     >
-      <View style={ProfileStyles.vehicleInfo}>
-        <View>
+      <View style={ProfileStyles.vehicleInfoContainer}>
+        <View style={ProfileStyles.vehicleTextContainer}>
           <Text style={ProfileStyles.listItemTitle}>
             {vehicle.nickName}
           </Text>
@@ -40,17 +50,15 @@ const ProfileScreen = ({ navigation }) => {
             License Type: {vehicle.licenseType}, State: {vehicle.state}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => deleteVehicle(vehicle._id)}>
-          <Icon 
-            name="trash" 
-            size={24}
-            color={ProfileStyles.deleteIcon.color}
-          />
-        </TouchableOpacity>
+        <Icon 
+          name="angle-right" 
+          size={24}
+          color="#ccc" // Replace with your color
+          style={ProfileStyles.viewTicketsIcon}
+        />
       </View>
     </TouchableOpacity>
   );
-
 
   const getVehicles = async () => {
     try {
@@ -132,33 +140,35 @@ useEffect(() => {
 
 return (
     <SafeAreaView style={ProfileStyles.container}>
-      <ScrollView
-        style={ProfileStyles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={getVehicles} />
-        }
-      >
-        {loading ? (
-          <ActivityIndicator size="large" color={ProfileStyles.activityIndicator.color} />
-        ) : vehicles.length === 0 ? (
-          <Text style={ProfileStyles.noVehiclesText}>No vehicles found.</Text>
-        ) : (
-          vehicles.map((vehicle) => <VehicleItem key={vehicle._id} vehicle={vehicle} />)
-        )}
-      </ScrollView>
-      <TouchableOpacity
-        style={ProfileStyles.addVehicleButton}
-        onPress={() => navigation.navigate('AddVehicleScreen')}
-      >
-        <Icon
-          name="plus"
-          size={24}
-          color={ProfileStyles.addVehicleIcon.color}
-        />
-      </TouchableOpacity>
-      {/* ... (rest of the return statement remains unchanged) */}
-    </SafeAreaView>
-  );
+    <SwipeListView
+      data={vehicles}
+      renderItem={({ item }) => <VehicleItem vehicle={item} />}
+      renderHiddenItem={renderHiddenItem}
+      rightOpenValue={-75}
+      disableRightSwipe
+      previewRowKey={'0'}
+      previewOpenValue={-40}
+      previewOpenDelay={3000}
+      keyExtractor={(item) => item._id.toString()}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={ProfileStyles.listViewContentContainer}
+    />
+    {loading && (
+      <ActivityIndicator size="large" color={ProfileStyles.activityIndicator.color} />
+    )}
+    {error && <Text style={ProfileStyles.errorText}>{error}</Text>}
+    <TouchableOpacity
+      style={ProfileStyles.addVehicleButton}
+      onPress={() => navigation.navigate('AddVehicleScreen')}
+    >
+      <Icon
+        name="plus"
+        size={24}
+        color={ProfileStyles.addVehicleIcon.color}
+      />
+    </TouchableOpacity>
+  </SafeAreaView>
+);
 };
 
 export default ProfileScreen;
