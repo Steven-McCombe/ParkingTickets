@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { fetchViolations, requestViolationsUpdate } from '../../utils/violationsService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const ViolationsComponent = ({vehicleId}) => {
   const [violations, setViolations] = useState([]);
@@ -13,19 +15,29 @@ const toggleExpand = (id) => {
 };
 
 
-  const getViolationsData = async () => {
-    console.log('getViolationsData called ./components/ViolationsComponent.js');
-    const userId = await AsyncStorage.getItem('userId');
-    try {
-      setLoading(true);
-      const data = await fetchViolations(vehicleId, userId);
-      setViolations(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const getViolationsData = async () => {
+  console.log('getViolationsData called ./components/ViolationsComponent.js');
+  const userJson = await AsyncStorage.getItem('user');
+  if (!userJson) {
+    console.error("User not found in AsyncStorage.");
+    // Handle the case where the user data is not found in AsyncStorage
+    return;
+  }
+
+  const user = JSON.parse(userJson);
+  const userId = user._id;
+  console.log('Retrieved userId from AsyncStorage:', userId);
+  try {
+    setLoading(true);
+    const data = await fetchViolations(vehicleId, userId);
+    setViolations(data || []); // Ensure violations is always an array
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     getViolationsData();

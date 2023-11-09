@@ -39,6 +39,12 @@ const router = express.Router();
 // routes/vehicleRoutes.js
 router.get('/violations', async (req, res) => {
   const { vehicleId, userId } = req.query;
+
+  // Check if both vehicleId and userId are provided
+  if (!vehicleId || !userId) {
+    return res.status(400).json({ message: 'Vehicle ID and User ID are required.' });
+  }
+
   try {
     // Fetch violations for the vehicle that belong to the user
     const violations = await Violation.find({ vehicle: vehicleId, user: userId });
@@ -48,6 +54,7 @@ router.get('/violations', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
 
 router.post('/addViolations', authMiddleware, async (req, res) => {
   try {
