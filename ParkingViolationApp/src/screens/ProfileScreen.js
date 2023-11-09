@@ -23,7 +23,34 @@ const ProfileScreen = ({ navigation }) => {
 
   
 
-  console.log('Vehicles ====:', vehicles);
+  const VehicleItem = ({ vehicle }) => (
+    <TouchableOpacity 
+      style={ProfileStyles.listItemContainer}
+      onPress={() => navigation.navigate('MainScreen', { vehicleId: vehicle._id })}
+    >
+      <View style={ProfileStyles.vehicleInfo}>
+        <View>
+          <Text style={ProfileStyles.listItemTitle}>
+            {vehicle.nickName}
+          </Text>
+          <Text style={ProfileStyles.listItemSubtitle}>
+            {vehicle.licensePlate}
+          </Text>
+          <Text style={ProfileStyles.listItemDetails}>
+            License Type: {vehicle.licenseType}, State: {vehicle.state}
+          </Text>
+        </View>
+        <TouchableOpacity onPress={() => deleteVehicle(vehicle._id)}>
+          <Icon 
+            name="trash" 
+            size={24}
+            color={ProfileStyles.deleteIcon.color}
+          />
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
+  );
+
 
   const getVehicles = async () => {
     try {
@@ -103,67 +130,35 @@ useEffect(() => {
     }
 };
 
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-    <ScrollView
-    style={ProfileStyles.container}
-    refreshControl={
-        <RefreshControl refreshing={loading} onRefresh={getVehicles} />
-    }
->
+return (
+    <SafeAreaView style={ProfileStyles.container}>
+      <ScrollView
+        style={ProfileStyles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={getVehicles} />
+        }
+      >
         {loading ? (
-   <ActivityIndicator size="large" color="#0000ff" />
-) : (
-  vehicles.length === 0 ? (
-    <Text>No vehicles found.</Text>
-  ) : (
-    vehicles && (
-        <View>
-        {vehicles.map(vehicle => (
-            <ListItem 
-                key={vehicle.licensePlate} 
-                containerStyle={ProfileStyles.listItemContainer}
-                onPress={() => navigation.navigate('MainScreen', { vehicleId: vehicle._id })}
-            >
-                <ListItem.Content>
-                    <ListItem.Title style={ProfileStyles.listItemTitle}>
-                        {vehicle.nickName}
-                    </ListItem.Title>
-                    <ListItem.Subtitle style={ProfileStyles.listItemSubtitle}>
-                        {vehicle.licensePlate}
-                    </ListItem.Subtitle>
-                    <Text style={ProfileStyles.listItemDetails}>
-                        License Type: {vehicle.licenseType}, State: {vehicle.state}
-                    </Text>
-                </ListItem.Content>
-                <Icon 
-                    name="trash" 
-                    type="font-awesome" 
-                    onPress={() => deleteVehicle(vehicle._id)} 
-                    style={ProfileStyles.deleteIcon}
-                />
-            </ListItem>
-        ))}
-    </View>
-    )
-    )
-  )}
-
-    </ScrollView>
-<TouchableOpacity
-  style={ProfileStyles.addVehicleButton}
-  onPress={() => navigation.navigate('AddVehicleScreen')}
->
-  <Icon
-    name="plus"
-    type="font-awesome-5"
-    style={ProfileStyles.addVehicleIcon}
-  />
-</TouchableOpacity>
-    <Button title="Logout" onPress={logout} />
-    <Button title="Main" onPress={() => navigation.navigate('MainScreen')} />
+          <ActivityIndicator size="large" color={ProfileStyles.activityIndicator.color} />
+        ) : vehicles.length === 0 ? (
+          <Text style={ProfileStyles.noVehiclesText}>No vehicles found.</Text>
+        ) : (
+          vehicles.map((vehicle) => <VehicleItem key={vehicle._id} vehicle={vehicle} />)
+        )}
+      </ScrollView>
+      <TouchableOpacity
+        style={ProfileStyles.addVehicleButton}
+        onPress={() => navigation.navigate('AddVehicleScreen')}
+      >
+        <Icon
+          name="plus"
+          size={24}
+          color={ProfileStyles.addVehicleIcon.color}
+        />
+      </TouchableOpacity>
+      {/* ... (rest of the return statement remains unchanged) */}
     </SafeAreaView>
-);
+  );
 };
 
 export default ProfileScreen;

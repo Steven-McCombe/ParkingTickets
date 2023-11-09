@@ -1,96 +1,86 @@
 // ProfileStyles.js
 import { PlatformColor, StyleSheet } from 'react-native';
-import palette from './colorScheme'; // Ensure this import points to the correct file path for your color scheme
+import palette from './colorScheme'; 
 
 const ProfileStyles = StyleSheet.create({
     container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: palette.background, // Using color from the scheme
-    },
-    boldText: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: palette.text, // Using color from the scheme
-        marginBottom: 20,
-    },
-    cardContainer: {
-        marginBottom: 20,
-        borderRadius: 8,
-        overflow: 'hidden',
-        backgroundColor: palette.background, // Optional: if you want cards to have the same bg as the app
-    },
-    regularText: {
-        fontSize: 16,
-        color: palette.text, // Using color from the scheme
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        marginTop: 10,
-        justifyContent: 'flex-end',
-    },
-    iconButton: {
-        marginLeft: 10,
-    },
-    addButton: {
-        backgroundColor: palette.accent, // Using accent color for the button
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    buttonText: {
-        color: palette.background, // Text color contrast with the button
-        fontSize: 16,
-        fontWeight: 'bold',
+      flex: 1,
+      padding: 10,
+      backgroundColor: palette.background,
     },
     listItemContainer: {
-        borderBottomWidth: 1,
-        borderBottomColor: palette.accent, // Subtle color for the list item border
-        borderLeftWidth: 4,
-        borderLeftColor: palette.primary, // Highlight color for the vertical border
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: palette.background, 
-        marginBottom: 2,
+      backgroundColor: '#fff',
+      borderRadius: 8,
+      padding: 16,
+      marginBottom: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.22,
+      shadowRadius: 2.22,
+      elevation: 3,
+    },
+    vehicleInfo: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
     },
     listItemTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: palette.text, 
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: palette.primary,
     },
     listItemSubtitle: {
-        fontSize: 16,
-        color: palette.primary, 
+      fontSize: 14,
+      color: palette.text,
     },
     listItemDetails: {
-        fontSize: 12,
-        color: palette.accent,
+      fontSize: 12,
+      color: palette.accent,
     },
     deleteIcon: {
-        color: palette.danger, 
+      color: palette.danger,
     },
     addVehicleButton: {
-        position: 'absolute', // Floats over the content
-        right: 50, // 20 pixels from the right
-        bottom: 50, // 20 pixels from the bottom
-        backgroundColor: palette.success, // Using the accent color
-        width: 56, // Circular button standard diameter
-        height: 56, // Circular button standard diameter
-        borderRadius: 28, // Half the width/height to make it perfectly round
-        justifyContent: 'center', // Center the icon vertically
-        alignItems: 'center', // Center the icon horizontally
-        elevation: 6, // Shadow for Android
-        shadowColor: '#000', // Shadow color for iOS
-        shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
-        shadowOpacity: 0.25, // Shadow opacity for iOS
-        shadowRadius: 3.84, // Shadow radius for iOS
+      position: 'absolute',
+      right: 20,
+      bottom: 20,
+      backgroundColor: palette.primary,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 6,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+    },
+    addVehicleIcon: {
+      fontSize: 24,
+      color: palette.background,
+    },
+    noVehiclesText: {
+        textAlign: 'center',
+        fontSize: 16,
+        color: palette.text,
+        marginTop: 20,
       },
-      
-      addVehicleIcon: {
-        fontSize: 24,
-        color: palette.background, // Icon color that contrasts with the button
+      activityIndicator: {
+        color: palette.primary,
       },
-});
-
-export default ProfileStyles;
+    buttonGroup: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      padding: 20,
+    },
+    logoutButton: {
+      backgroundColor: palette.danger,
+    },
+    mainButton: {
+      backgroundColor: palette.primary,
+    },
+  });
+  
+  export default ProfileStyles;
