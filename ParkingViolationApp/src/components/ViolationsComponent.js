@@ -1,50 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { fetchViolations, requestViolationsUpdate } from '../../utils/violationsService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ViolationsComponentStyles from '../styles/ViolationsComponentStyles';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-
-const ViolationsComponent = ({vehicleId}) => {
+const ViolationsComponent = ({ vehicleId }) => {
   const [violations, setViolations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [expandedViolationId, setExpandedViolationId] = useState(null);
 
-const toggleExpand = (id) => {
-  setExpandedViolationId(expandedViolationId === id ? null : id);
-};
+  const toggleExpand = (id) => {
+    setExpandedViolationId(expandedViolationId === id ? null : id);
+  };
 
+  const getViolationsData = async () => {
+    const userJson = await AsyncStorage.getItem('user');
+    if (!userJson) {
+      console.error("User not found in AsyncStorage.");
+      return;
+    }
 
-const getViolationsData = async () => {
-  console.log('getViolationsData called ./components/ViolationsComponent.js');
-  const userJson = await AsyncStorage.getItem('user');
-  if (!userJson) {
-    console.error("User not found in AsyncStorage.");
-    // Handle the case where the user data is not found in AsyncStorage
-    return;
-  }
-
-  const user = JSON.parse(userJson);
-  const userId = user._id;
-  console.log('Retrieved userId from AsyncStorage:', userId);
-  try {
-    setLoading(true);
-    const data = await fetchViolations(vehicleId, userId);
-    setViolations(data || []); // Ensure violations is always an array
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+    const user = JSON.parse(userJson);
+    const userId = user._id;
+    try {
+      setLoading(true);
+      const data = await fetchViolations(vehicleId, userId);
+      setViolations(data || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     getViolationsData();
   }, [vehicleId]);
 
   const handleUpdate = async () => {
-    console.log('handleUpdate called ./components/ViolationsComponent.js');
     try {
       setLoading(true);
       await requestViolationsUpdate();
@@ -55,109 +50,80 @@ const getViolationsData = async () => {
       setLoading(false);
     }
   };
+  const DetailRow = ({ label, value }) => (
+    <View style={ViolationsComponentStyles.detailRow}>
+      <Text style={ViolationsComponentStyles.detailLabel}>{label}:</Text>
+      <Text style={ViolationsComponentStyles.detailValue}>{value}</Text>
+    </View>
+  );
 
   const renderItem = ({ item }) => (
-    <View style={styles.violationItem}>
-    <TouchableOpacity onPress={() => toggleExpand(item._id)}>
-      <View style={styles.violationSummary}>
-        <View style={styles.violationInfo}>
-          <Text style={styles.violationNumber}>{item.summonsNumber}</Text>
-          <Text style={styles.violationDate}>{new Date(item.issueDate).toLocaleDateString()}</Text>
-          <Text style={styles.violationTitle}>{item.violation}</Text>
-          <Text style={styles.violationAmount}>${item.fineAmount}.00</Text>
-        </View>
-        <View style={styles.paymentStatus}>
-          <Text style={item.amountDue === 0 ? styles.paidLabel : styles.unpaidLabel}>
-            {item.amountDue === 0 ? 'PAID' : 'UNPAID'}
-          </Text>
-        </View>
+    <TouchableOpacity
+    style={ViolationsComponentStyles.violationItem}
+    onPress={() => toggleExpand(item._id)}
+  >
+    <View style={ViolationsComponentStyles.violationSummary}>
+      <View style={ViolationsComponentStyles.violationInfo}>
+        <Text style={ViolationsComponentStyles.violationDate}>
+          {new Date(item.issueDate).toLocaleDateString()} {item.violationTime}M
+        </Text>
+        <Text style={ViolationsComponentStyles.violationTitle}>{item.violation}</Text>
+        <Text style={ViolationsComponentStyles.violationAmount}>${item.fineAmount}.00</Text>
       </View>
-      {expandedViolationId === item._id && (
-        <View style={styles.violationDetails}>
-              {/* Include all relevant details here */}
-              <Text>Plate: {item.plate}</Text>
-              <Text>Violation: {item.violation}</Text>
-              <Text>Violation Time: {new Date(item.violationTime).toLocaleTimeString()}</Text>
-              <Text>Violation Date: {new Date(item.violationTime).toLocaleDateString()}</Text>
-              <Text>Fine Amount: ${item.fineAmount}.00</Text>
-              <Text>Penalty Amount: ${item.penaltyAmount}.00</Text>
-              <Text>Interest Amount: ${item.interestAmount}.00</Text>
-              <Text>Reduction Amount: ${item.reductionAmount}.00</Text>
-              <Text>Payment Amount: ${item.paymentAmount}.00</Text>
-              <Text>Amount Due: ${item.amountDue}.00</Text>
-              <Text>Precinct: {item.precinct}</Text>
-              <Text>County: {item.county}</Text>
-              <Text>Issuing Agency: {item.issuingAgency}</Text>
-              <Text style={styles.detailText}>View Ticket: {item.summonsImage.url}</Text>
-              </View>
+      <View style={ViolationsComponentStyles.paymentStatus}>
+        <Text style={item.amountDue === 0 ? ViolationsComponentStyles.paidLabel : ViolationsComponentStyles.unpaidLabel}>
+          {item.amountDue === 0 ? 'PAID' : 'UNPAID'}
+        </Text>
+      </View>
+      <View style={ViolationsComponentStyles.expandIconContainer}>
+        <Icon
+          name={expandedViolationId === item._id ? 'chevron-up' : 'chevron-down'}
+          size={16} // Slightly smaller icon size
+          color="#6e6e6e" // Muted color
+        />
+      </View>
+    </View> 
+            {expandedViolationId === item._id && (
+        <View style={ViolationsComponentStyles.violationDetails}>
+          <DetailRow label="Plate" value={item.plate} />
+          <DetailRow label="Summons Number" value={item.summonsNumber} />
+          <DetailRow label="Violation Time" value={item.violationTime} />
+          <DetailRow label="Violation Date" value={new Date(item.issueDate).toLocaleDateString()} />
+          <DetailRow label="Fine Amount" value={`$${item.fineAmount}.00`} />
+          <DetailRow label="Penalty Amount" value={`$${item.penaltyAmount}.00`} />
+          <DetailRow label="Interest Amount" value={`$${item.interestAmount}.00`} />
+          <DetailRow label="Reduction Amount" value={`$${item.reductionAmount}.00`} />
+          <DetailRow label="Payment Amount" value={`$${item.paymentAmount}.00`} />
+          <DetailRow label="Amount Due" value={`$${item.amountDue}.00`} />
+          <DetailRow label="Precinct" value={item.precinct} />
+          <DetailRow label="County" value={item.county} />
+          <DetailRow label="Issuing Agency" value={item.issuingAgency} />
+          <TouchableOpacity onPress={() => {/* handle ticket viewing */}}>
+            <Text style={ViolationsComponentStyles.linkText}>View Ticket</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </TouchableOpacity>
-  </View>
   );
-  
+
   return (
-    <View style={styles.container}>
-      <Button title="Update Violations" onPress={handleUpdate} />
-      {loading && <ActivityIndicator />}
-      {error && <Text style={styles.error}>{error}</Text>}
-      {!loading && !violations.length && <Text>No violations found.</Text>}
+    <View style={ViolationsComponentStyles.container}>
+      <TouchableOpacity
+        style={ViolationsComponentStyles.submitButton}
+        onPress={handleUpdate}
+      >
+        <Text style={ViolationsComponentStyles.submitButtonText}>Update Violations</Text>
+      </TouchableOpacity>
+      {loading && <ActivityIndicator size="large" color={ViolationsComponentStyles.activityIndicatorColor} />}
+      {error && <Text style={ViolationsComponentStyles.error}>{error}</Text>}
+      {!loading && !violations.length && <Text style={ViolationsComponentStyles.noViolationsText}>No violations found.</Text>}
       <FlatList
-  data={violations}
-  renderItem={renderItem}
-  keyExtractor={(item) => item._id} // Assuming _id is unique for each violation
-/>
+        data={violations}
+        renderItem={renderItem}
+        keyExtractor={(item) => item._id}
+      />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  // ... other styles ...
-  violationSummary: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  violationInfo: {
-    flex: 1,
-  },
-  violationNumber: {
-    fontSize: 14,
-    color: '#333',
-  },
-  violationDate: {
-    fontSize: 12,
-    color: '#666',
-  },
-  violationTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  violationAmount: {
-    fontSize: 16,
-    color: '#000',
-  },
-  paymentStatus: {
-    padding: 5,
-    borderRadius: 5,
-  },
-  paidLabel: {
-    fontWeight: 'bold',
-    color: 'green',
-  },
-  unpaidLabel: {
-    fontWeight: 'bold',
-    color: 'red',
-  },
-  detailText: {
-    fontSize: 14,
-    marginVertical: 2,
-  }
-  // ... any other styles you need ...
-});
-
-
-
 
 export default ViolationsComponent;

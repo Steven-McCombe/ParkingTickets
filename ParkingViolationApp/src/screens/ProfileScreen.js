@@ -7,7 +7,6 @@ import ProfileStyles from '../styles/ProfileStyles';
 import { UserContext } from '../contexts/UserContext'; 
 import { AuthContext } from '../contexts/AuthContext';
 import { showMessage } from "react-native-flash-message";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getUserData} from "../../utils/getUserData";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { VehiclesContext } from '../contexts/VehiclesContext';
