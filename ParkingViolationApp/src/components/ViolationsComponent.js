@@ -14,6 +14,7 @@ const ViolationsComponent = ({ vehicleId }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const flatListRef = useRef();
+  const ITEM_HEIGHT = 130;
 
   const viewTicket = (url) => {
     if (url) {
@@ -42,12 +43,16 @@ const ViolationsComponent = ({ vehicleId }) => {
       console.error("User not found in AsyncStorage.");
       return;
     }
-
+  
     const user = JSON.parse(userJson);
     const userId = user._id;
     try {
       setLoading(true);
-      const data = await fetchViolations(vehicleId, userId);
+      let data = await fetchViolations(vehicleId, userId);
+      if (data) {
+        // Sort the violations by issueDate in descending order
+        data.sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
+      }
       setViolations(data || []);
     } catch (err) {
       setError(err.message);
@@ -55,6 +60,7 @@ const ViolationsComponent = ({ vehicleId }) => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     getViolationsData();
@@ -139,14 +145,14 @@ const ViolationsComponent = ({ vehicleId }) => {
       {error && <Text style={ViolationsComponentStyles.error}>{error}</Text>}
       {!loading && !violations.length && <Text style={ViolationsComponentStyles.noViolationsText}>No violations found.</Text>}
       <FlatList
-        ref={flatListRef}
-        data={violations}
-        renderItem={renderItem}
-        keyExtractor={(item) => item._id}
-        getItemLayout={(data, index) => (
-          {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
-        )}
-      />
+  ref={flatListRef}
+  data={violations}
+  renderItem={renderItem}
+  keyExtractor={(item) => item._id}
+  getItemLayout={(data, index) => (
+    {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+  )}
+/>
       {pdfUrl && (
         <PDFViewerModal
           isVisible={isModalVisible}
