@@ -4,12 +4,26 @@ import { fetchViolations, requestViolationsUpdate } from '../../utils/violations
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ViolationsComponentStyles from '../styles/ViolationsComponentStyles';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import PDFViewerModal from './PDFViewerModal'; 
 
 const ViolationsComponent = ({ vehicleId }) => {
   const [violations, setViolations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [expandedViolationId, setExpandedViolationId] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+
+  const viewTicket = (url) => {
+    if (url) {
+      setPdfUrl(url);
+      setIsModalVisible(true);
+    } else {
+      // Handle the scenario where there is no ticket link
+      console.log("No ticket link available for this violation.");
+      // Optionally, show a message to the user
+    }
+  };
 
   const toggleExpand = (id) => {
     setExpandedViolationId(expandedViolationId === id ? null : id);
@@ -98,7 +112,7 @@ const ViolationsComponent = ({ vehicleId }) => {
           <DetailRow label="Precinct" value={item.precinct} />
           <DetailRow label="County" value={item.county} />
           <DetailRow label="Issuing Agency" value={item.issuingAgency} />
-          <TouchableOpacity onPress={() => {/* handle ticket viewing */}}>
+          <TouchableOpacity onPress={() => viewTicket(item.summonsImage.url)}>
             <Text style={ViolationsComponentStyles.linkText}>View Ticket</Text>
           </TouchableOpacity>
         </View>
@@ -122,6 +136,13 @@ const ViolationsComponent = ({ vehicleId }) => {
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
       />
+      {pdfUrl && (
+        <PDFViewerModal
+          isVisible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          pdfUrl={pdfUrl}
+        />
+        )}
     </View>
   );
 };

@@ -1,4 +1,4 @@
-// index.js
+// ./ index.js
 import 'react-native-gesture-handler';
 import { AppRegistry } from 'react-native';
 import AppContainer from './src/AppContainer';  // Import AppContainer
