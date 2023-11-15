@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef} from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { fetchViolations, requestViolationsUpdate } from '../../utils/violationsService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,6 +13,7 @@ const ViolationsComponent = ({ vehicleId }) => {
   const [expandedViolationId, setExpandedViolationId] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
+  const flatListRef = useRef();
 
   const viewTicket = (url) => {
     if (url) {
@@ -21,12 +22,18 @@ const ViolationsComponent = ({ vehicleId }) => {
     } else {
       // Handle the scenario where there is no ticket link
       console.log("No ticket link available for this violation.");
-      // Optionally, show a message to the user
     }
   };
 
-  const toggleExpand = (id) => {
+  const scrollToItem = (index) => {
+    flatListRef.current.scrollToIndex({ animated: true, index: index });
+  };
+
+  const toggleExpand = (id, index) => {
     setExpandedViolationId(expandedViolationId === id ? null : id);
+    if (expandedViolationId !== id) {
+      scrollToItem(index);
+    }
   };
 
   const getViolationsData = async () => {
@@ -71,11 +78,11 @@ const ViolationsComponent = ({ vehicleId }) => {
     </View>
   );
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item, index }) => (
     <TouchableOpacity
-    style={ViolationsComponentStyles.violationItem}
-    onPress={() => toggleExpand(item._id)}
-  >
+      style={ViolationsComponentStyles.violationItem}
+      onPress={() => toggleExpand(item._id, index)}
+    >
     <View style={ViolationsComponentStyles.violationSummary}>
       <View style={ViolationsComponentStyles.violationInfo}>
         <Text style={ViolationsComponentStyles.violationDate}>
@@ -132,9 +139,13 @@ const ViolationsComponent = ({ vehicleId }) => {
       {error && <Text style={ViolationsComponentStyles.error}>{error}</Text>}
       {!loading && !violations.length && <Text style={ViolationsComponentStyles.noViolationsText}>No violations found.</Text>}
       <FlatList
+        ref={flatListRef}
         data={violations}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
+        getItemLayout={(data, index) => (
+          {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+        )}
       />
       {pdfUrl && (
         <PDFViewerModal
