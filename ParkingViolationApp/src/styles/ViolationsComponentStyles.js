@@ -21,7 +21,7 @@ const ViolationsComponentStyles = StyleSheet.create({
   violationSummary: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: '',
     marginBottom: 16,
   },
   violationInfo: {
@@ -149,8 +149,10 @@ const ViolationsComponentStyles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
+    fontWeight: 'bold', 
     color: palette.textPrimary,
-    flex: 1,
+    flex: 0, 
+    marginLeft: 0 
   },
   summaryValue: {
     fontSize: 14,
@@ -159,7 +161,7 @@ const ViolationsComponentStyles = StyleSheet.create({
     textAlign: 'right',
   },
   summaryIcon: {
-    marginRight: 10,
+    marginRight: 0,
     width: 20,
     textAlign: 'center',
   },
@@ -214,6 +216,15 @@ const ViolationsComponentStyles = StyleSheet.create({
   undoButtonText: {
     color: palette.textPrimary,
   },
+  viewTicket: { 
+    backgroundColor: `${palette.primary}20`,
+    textAlign: 'center',
+    overflow: 'hidden',
+    borderRadius: 5,
+    padding: 5,
+    margin: 3,
+  },
+  
   
 });
 

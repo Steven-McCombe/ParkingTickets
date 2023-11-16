@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useRef} from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { Linking, View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { fetchViolations, requestViolationsUpdate } from '../../utils/violationsService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { REACT_APP_SERVER_URL } from '../config';
@@ -8,7 +8,6 @@ import palette from '../styles/colorScheme';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import PDFViewerModal from './PDFViewerModal'; 
 import { AuthContext } from '../contexts/AuthContext';
-
 
 const ViolationsComponent = ({ vehicleId }) => {
   const { user, token, loading: authLoading } = useContext(AuthContext);
@@ -96,10 +95,10 @@ const ViolationsComponent = ({ vehicleId }) => {
     }
   };
 
+
   const redirectToStatePaymentSite = (violation) => {
-    // Replace with the actual URL and logic to redirect
     const paymentUrl = `https://a836-citypay.nyc.gov/citypay/Parking#!/by-plate-form`;
-    // Logic to open the URL in a browser or WebView
+    Linking.openURL(paymentUrl).catch(err => console.error('An error occurred', err));
   };
   
 
@@ -183,7 +182,7 @@ const ViolationsComponent = ({ vehicleId }) => {
   
   const DetailRow = ({ icon, label, value }) => (
     <View style={ViolationsComponentStyles.summaryInfo}>
-      <Icon name={icon} size={16} color={palette.primary} style={ViolationsComponentStyles.summaryIcon} />
+      {icon !== "" && <Icon name={icon} size={16} color={palette.primary} style={ViolationsComponentStyles.summaryIcon} />}
       <Text style={ViolationsComponentStyles.summaryLabel}>{label}:</Text>
       <Text style={ViolationsComponentStyles.summaryValue}>{value}</Text>
     </View>
@@ -222,22 +221,25 @@ const ViolationsComponent = ({ vehicleId }) => {
     </View> 
             {expandedViolationId === item._id && (
         <View style={ViolationsComponentStyles.violationDetails}>
-          <DetailRow label="Plate" value={item.plate} />
-          <DetailRow label="Summons Number" value={item.summonsNumber} />
-          <DetailRow label="Violation Time" value={`${item.violationTime}M`} />
-          <DetailRow label="Violation Date" value={new Date(item.issueDate).toLocaleDateString()} />
-          <DetailRow label="Fine Amount" value={`$${item.fineAmount}.00`} />
-          <DetailRow label="Penalty Amount" value={`$${item.penaltyAmount}.00`} />
-          <DetailRow label="Interest Amount" value={`$${item.interestAmount}.00`} />
-          <DetailRow label="Reduction Amount" value={`$${item.reductionAmount}.00`} />
-          <DetailRow label="Payment Amount" value={`$${item.paymentAmount}.00`} />
-          <DetailRow label="Amount Due" value={`$${item.amountDue}.00`} />
-          <DetailRow label="Precinct" value={item.precinct} />
-          <DetailRow label="County" value={item.county} />
-          <DetailRow label="Issuing Agency" value={item.issuingAgency} />
-          <TouchableOpacity onPress={() => viewTicket(item.summonsImage.url)}>
-            <Text style={ViolationsComponentStyles.linkText}>View Ticket</Text>
+          <DetailRow icon="" label="Plate" value={item.plate} />
+          <DetailRow icon="" label="Summons Number" value={item.summonsNumber} />
+          <DetailRow icon="" label="Violation Time" value={`${item.violationTime}M`} />
+          <DetailRow icon="" label="Violation Date" value={new Date(item.issueDate).toLocaleDateString()} />
+          <DetailRow icon="" label="Fine Amount" value={`$${item.fineAmount}.00`} />
+          <DetailRow icon="" label="Penalty Amount" value={`$${item.penaltyAmount}.00`} />
+          <DetailRow icon="" label="Interest Amount" value={`$${item.interestAmount}.00`} />
+          <DetailRow icon="" label="Reduction Amount" value={`$${item.reductionAmount}.00`} />
+          <DetailRow icon="" label="Payment Amount" value={`$${item.paymentAmount}.00`} />
+          <DetailRow icon="" label="Amount Due" value={`$${item.amountDue}.00`} />
+          <DetailRow icon="" label="Precinct" value={item.precinct} />
+          <DetailRow icon="" label="County" value={item.county} />
+          <DetailRow icon="" label="Issuing Agency" value={item.issuingAgency} />
+          <TouchableOpacity 
+            onPress={() => viewTicket(item.summonsImage.url)}
+          >
+            <Text style = {ViolationsComponentStyles.viewTicket}>View Ticket</Text>
           </TouchableOpacity>
+
           {item.amountDue > 0 && (
           <>
             <Text style={ViolationsComponentStyles.clarifyText}>Due to stale data from New York City Open Data, This ticket may have already been paid. Click mark as paid to update it manually. This will have no effect on official payment status of a ticket.</Text>
