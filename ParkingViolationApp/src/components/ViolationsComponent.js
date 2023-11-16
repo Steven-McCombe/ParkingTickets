@@ -15,7 +15,6 @@ const ViolationsComponent = ({ vehicleId }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const flatListRef = useRef();
-  const ITEM_HEIGHT = 160;
 
   const totalTickets = violations.length;
   const totalPaid = violations.reduce((acc, violation) => acc + (violation.amountDue === 0 ? violation.fineAmount : 0), 0);
@@ -34,19 +33,16 @@ const ViolationsComponent = ({ vehicleId }) => {
       console.log("No ticket link available for this violation.");
     }
   };
-
-  const scrollToItem = (index) => {
-    const offset = ITEM_HEIGHT * index;
-    flatListRef.current.scrollToOffset({ animated: true, offset: offset });
-  };
   
 
   const toggleExpand = (id, index) => {
     setExpandedViolationId(expandedViolationId === id ? null : id);
     if (expandedViolationId !== id) {
-      scrollToItem(index);
+      // Scroll to the top of the list to make the expanded item visible
+      flatListRef.current.scrollToIndex({ animated: true, index: index, viewPosition: 0 });
     }
   };
+  
 
   const getViolationsData = async () => {
     const userJson = await AsyncStorage.getItem('user');
@@ -144,7 +140,7 @@ const ViolationsComponent = ({ vehicleId }) => {
         <View style={ViolationsComponentStyles.violationDetails}>
           <DetailRow label="Plate" value={item.plate} />
           <DetailRow label="Summons Number" value={item.summonsNumber} />
-          <DetailRow label="Violation Time" value={item.violationTime} />
+          <DetailRow label="Violation Time" value={`${item.violationTime}M`} />
           <DetailRow label="Violation Date" value={new Date(item.issueDate).toLocaleDateString()} />
           <DetailRow label="Fine Amount" value={`$${item.fineAmount}.00`} />
           <DetailRow label="Penalty Amount" value={`$${item.penaltyAmount}.00`} />
@@ -174,9 +170,6 @@ const ViolationsComponent = ({ vehicleId }) => {
   renderItem={renderItem}
   keyExtractor={(item) => item._id}
   ListHeaderComponent={renderSummary}
-  getItemLayout={(data, index) => (
-    {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
-  )}
 />
       {pdfUrl && (
         <PDFViewerModal

@@ -3,28 +3,6 @@ const { REACT_APP_DATA_NYC_GOV_APP_TOKEN , REACT_APP_NYC_SECRET_TOKEN } = requir
 
 const BASE_URL = "https://data.cityofnewyork.us/resource/nc67-uf89.json";
 
-// const fetchViolationsByPlate = async (plate) => {
-//   console.log("fetchViolationsByPlate called with plate:", plate);
-//   try {
-//     const response = await fetch(`${BASE_URL}?plate=${plate}`, {
-//       method: 'GET',
-//       headers: {
-//         "X-App-Token":"v6hLGk8IVIrU73i2Yla1vZiaM"
-//       }
-//     });
-
-//     if (!response.ok) {
-//       throw new Error(`API call failed with status: ${response.status}`);
-//     }
-
-//     const data = await response.json();
-//     console.log("Response from fetchViolationsByPlate:", data);
-//     return data;
-//   } catch (error) {
-//     console.error("There was an error fetching the violations data:", error);
-//     throw error;
-//   }
-// };
 
 const updateViolationStatus = async (violationId, status) => {
   console.log("updateViolationStatus called with violationId:", violationId, "and status:", status);
