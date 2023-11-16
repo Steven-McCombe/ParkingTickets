@@ -20,6 +20,7 @@ const ViolationSchema = new Schema({
         type: Date,
         required: true,
     },
+    plate: String,
     violationTime: String,
     violation: String,
     fineAmount: Number,

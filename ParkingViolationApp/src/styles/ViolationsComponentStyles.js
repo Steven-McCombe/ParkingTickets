@@ -80,7 +80,9 @@ const ViolationsComponentStyles = StyleSheet.create({
   },
   noViolationsText: {
     textAlign: 'center',
-    color: palette.text,
+    color: palette.danger,
+    padding: 10,
+    fontWeight: 'bold',
   },
   detailRow: {
     flexDirection: 'row',
@@ -108,6 +110,49 @@ const ViolationsComponentStyles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginTop: 8,
+  },
+
+  summaryContainer: {
+    backgroundColor: palette.surface,
+    padding: 15,
+    borderRadius: 10,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+    marginBottom: 20,
+  },
+  summaryHeading: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: palette.primary,
+    marginBottom: 10,
+  },
+  summaryInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: palette.textPrimary,
+    flex: 1,
+  },
+  summaryValue: {
+    fontSize: 14,
+    color: palette.text,
+    flex: 1,
+    textAlign: 'right',
+  },
+  summaryIcon: {
+    marginRight: 10,
+  },
+  summaryText: {
+    fontSize: 14,
+    color: palette.textPrimary,
+    marginLeft: 5,
   },
 });
 

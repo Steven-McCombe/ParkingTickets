@@ -79,6 +79,7 @@ router.post('/addViolations', authMiddleware, async (req, res) => {
         const newViolation = new Violation({
           user: violationData.user,
           vehicle: violationData.vehicle,
+          plate: violationData.plate,
           summonsNumber: violationData.summons_number,
           issueDate: violationData.issue_date,
           violationTime: violationData.violation_time,

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react
 import { fetchViolations, requestViolationsUpdate } from '../../utils/violationsService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ViolationsComponentStyles from '../styles/ViolationsComponentStyles';
+import palette from '../styles/colorScheme';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import PDFViewerModal from './PDFViewerModal'; 
 
@@ -14,21 +15,31 @@ const ViolationsComponent = ({ vehicleId }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const flatListRef = useRef();
-  const ITEM_HEIGHT = 130;
+  const ITEM_HEIGHT = 160;
+
+  const totalTickets = violations.length;
+  const totalPaid = violations.reduce((acc, violation) => acc + (violation.amountDue === 0 ? violation.fineAmount : 0), 0);
+  const totalUnpaid = violations.reduce((acc, violation) => acc + (violation.amountDue > 0 ? violation.amountDue : 0), 0);
+  let sortedViolations = [...violations].sort((a, b) => new Date(a.issueDate) - new Date(b.issueDate));
+  let firstTicketDate = sortedViolations.length > 0 ? new Date(sortedViolations[0].issueDate).toLocaleDateString() : 'N/A';
+  let mostRecentTicketDate = sortedViolations.length > 0 ? new Date(sortedViolations[sortedViolations.length - 1].issueDate).toLocaleDateString() : 'N/A';
+  const plate = violations.length > 0 ? violations[0].plate : 'N/A';
+
 
   const viewTicket = (url) => {
     if (url) {
       setPdfUrl(url);
       setIsModalVisible(true);
     } else {
-      // Handle the scenario where there is no ticket link
       console.log("No ticket link available for this violation.");
     }
   };
 
   const scrollToItem = (index) => {
-    flatListRef.current.scrollToIndex({ animated: true, index: index });
+    const offset = ITEM_HEIGHT * index;
+    flatListRef.current.scrollToOffset({ animated: true, offset: offset });
   };
+  
 
   const toggleExpand = (id, index) => {
     setExpandedViolationId(expandedViolationId === id ? null : id);
@@ -77,10 +88,29 @@ const ViolationsComponent = ({ vehicleId }) => {
       setLoading(false);
     }
   };
-  const DetailRow = ({ label, value }) => (
-    <View style={ViolationsComponentStyles.detailRow}>
-      <Text style={ViolationsComponentStyles.detailLabel}>{label}:</Text>
-      <Text style={ViolationsComponentStyles.detailValue}>{value}</Text>
+
+  const renderSummary = () => {
+    if (violations.length === 0) {
+      return null;
+    }
+  
+    return (
+      <View style={ViolationsComponentStyles.summaryContainer}>
+        <Text style={ViolationsComponentStyles.summaryHeading}>Summary for {plate}</Text>
+        <DetailRow icon="ticket" label="Tickets" value={totalTickets.toString()} />
+        <DetailRow icon="dollar" label="Paid" value={`$${totalPaid.toFixed(2)}`} />
+        <DetailRow icon="exclamation-triangle" label="Unpaid" value={`$${totalUnpaid.toFixed(2)}`} />
+        <DetailRow icon="calendar-o" label="First Issued" value={firstTicketDate} />
+        <DetailRow icon="calendar" label="Recent" value={mostRecentTicketDate} />
+      </View>
+    );
+  };
+  
+  const DetailRow = ({ icon, label, value }) => (
+    <View style={ViolationsComponentStyles.summaryInfo}>
+      <Icon name={icon} size={16} color={palette.primary} style={ViolationsComponentStyles.summaryIcon} />
+      <Text style={ViolationsComponentStyles.summaryLabel}>{label}:</Text>
+      <Text style={ViolationsComponentStyles.summaryValue}>{value}</Text>
     </View>
   );
 
@@ -135,20 +165,15 @@ const ViolationsComponent = ({ vehicleId }) => {
 
   return (
     <View style={ViolationsComponentStyles.container}>
-      <TouchableOpacity
-        style={ViolationsComponentStyles.submitButton}
-        onPress={handleUpdate}
-      >
-        <Text style={ViolationsComponentStyles.submitButtonText}>Update Violations</Text>
-      </TouchableOpacity>
       {loading && <ActivityIndicator size="large" color={ViolationsComponentStyles.activityIndicatorColor} />}
       {error && <Text style={ViolationsComponentStyles.error}>{error}</Text>}
-      {!loading && !violations.length && <Text style={ViolationsComponentStyles.noViolationsText}>No violations found.</Text>}
+      {!loading && !violations.length && <Text style={ViolationsComponentStyles.noViolationsText}>No violations found. Please check the license plate.</Text>}
       <FlatList
   ref={flatListRef}
   data={violations}
   renderItem={renderItem}
   keyExtractor={(item) => item._id}
+  ListHeaderComponent={renderSummary}
   getItemLayout={(data, index) => (
     {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
   )}
