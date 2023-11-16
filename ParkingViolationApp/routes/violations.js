@@ -113,6 +113,34 @@ router.put('/updateViolationStatus/:violationId', authMiddleware, async (req, re
   }
 });
 
+// PUT route to undo mark as paid
+router.put('/undoMarkAsPaid/:violationId', authMiddleware, async (req, res) => {
+  const { violationId } = req.params;
+
+  if (!violationId) {
+    return res.status(400).json({ message: 'Violation ID is required.' });
+  }
+
+  try {
+    const violation = await Violation.findById(violationId);
+    if (!violation) {
+      return res.status(404).json({ message: 'Violation not found.' });
+    }
+
+    // Revert the changes
+    violation.amountDue = violation.paymentAmount;
+    violation.paymentAmount = 0;
+    violation.manuallyUpdated = false;
+    await violation.save();
+
+    res.json({ message: 'Violation reverted to unpaid status successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+});
+
+
 
 
 

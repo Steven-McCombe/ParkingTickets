@@ -70,7 +70,31 @@ const ViolationsComponent = ({ vehicleId }) => {
     }
   };
   
-  
+  const undoMarkAsPaid = async (violationId) => {
+    try {
+      const response = await fetch(`${REACT_APP_SERVER_URL}/violations/undoMarkAsPaid/${violationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Error undoing mark as paid');
+      }
+
+      // Update local state to reflect the change
+      const updatedViolations = violations.map(violation => 
+        violation._id === violationId ? { ...violation, amountDue: violation.paymentAmount, paymentAmount: 0, manuallyUpdated: false } : violation
+      );
+
+      setViolations(updatedViolations);
+    } catch (error) {
+      console.error('Error undoing mark as paid:', error);
+    }
+  };
 
   const redirectToStatePaymentSite = (violation) => {
     // Replace with the actual URL and logic to redirect
@@ -177,6 +201,11 @@ const ViolationsComponent = ({ vehicleId }) => {
         </Text>
         <Text style={ViolationsComponentStyles.violationTitle}>{item.violation}</Text>
         <Text style={ViolationsComponentStyles.violationAmount}>${item.fineAmount}.00</Text>
+        {item.manuallyUpdated && (
+          <Text style={ViolationsComponentStyles.manualMarked}>
+            This ticket was manually marked as paid.
+          </Text>
+        )}
       </View>
       <View style={ViolationsComponentStyles.paymentStatus}>
         <Text style={item.amountDue === 0 ? ViolationsComponentStyles.paidLabel : ViolationsComponentStyles.unpaidLabel}>
@@ -211,26 +240,30 @@ const ViolationsComponent = ({ vehicleId }) => {
           </TouchableOpacity>
           {item.amountDue > 0 && (
           <>
-            <Text style={ViolationsComponentStyles.warningText}>This ticket may have already been paid. Click mark as paid to update it manually</Text>
+            <Text style={ViolationsComponentStyles.clarifyText}>Due to stale data from New York City Open Data, This ticket may have already been paid. Click mark as paid to update it manually. This will have no effect on official payment status of a ticket.</Text>
             <TouchableOpacity
-              style={ViolationsComponentStyles.submitButton}
+              style={ViolationsComponentStyles.markButton}
               onPress={() => markTicketAsPaid(item._id)}
             >
-              <Text style={ViolationsComponentStyles.submitButtonText}>Mark as Paid</Text>
+              <Text style={ViolationsComponentStyles.markButtonText}>Mark as Paid</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={ViolationsComponentStyles.submitButton}
+              style={ViolationsComponentStyles.payButton}
               onPress={() => redirectToStatePaymentSite(item)}
             >
-              <Text style={ViolationsComponentStyles.submitButtonText}>Pay Online</Text>
+              <Text style={ViolationsComponentStyles.payButtonText}>Pay Online</Text>
             </TouchableOpacity>
           </>
         )}
         {item.manuallyUpdated && (
-          <Text style={ViolationsComponentStyles.warningText}>
-            Note: This ticket was manually marked as paid. Please verify with official records.
-          </Text>
-        )}
+      <TouchableOpacity
+        style={ViolationsComponentStyles.undoButton}
+        onPress={() => undoMarkAsPaid(item._id)}
+      >
+        <Text style={ViolationsComponentStyles.undoButtonText}>Undo Mark as Paid</Text>
+      </TouchableOpacity>
+    )}
+
       </View>
     )}
   </TouchableOpacity>

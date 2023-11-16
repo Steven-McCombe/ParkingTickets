@@ -44,6 +44,16 @@ const ViolationsComponentStyles = StyleSheet.create({
     fontSize: 16,
     color: palette.accent,
   },
+  manualMarked: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: palette.textPrimary,
+    backgroundColor: `${palette.warning}30`,
+    padding: 4,
+    borderRadius: 5,
+    overflow: 'hidden',
+    textAlign: 'center',
+  },
   paymentStatus: {
     padding: 5,
     borderRadius: 5,
@@ -53,14 +63,16 @@ const ViolationsComponentStyles = StyleSheet.create({
     color: palette.success,
     backgroundColor: `${palette.success}20`,
     padding: 8,
-    borderRadius: 16,
+    borderRadius: 5,
+    overflow: 'hidden',
   },
   unpaidLabel: {
     fontWeight: 'bold',
     color: palette.danger,
     backgroundColor: `${palette.danger}20`,
     padding: 8,
-    borderRadius: 16,
+    borderRadius: 5,
+    overflow: 'hidden',
   },
   submitButton: {
     backgroundColor: palette.primary,
@@ -148,6 +160,8 @@ const ViolationsComponentStyles = StyleSheet.create({
   },
   summaryIcon: {
     marginRight: 10,
+    width: 20,
+    textAlign: 'center',
   },
   summaryText: {
     fontSize: 14,
@@ -158,6 +172,47 @@ const ViolationsComponentStyles = StyleSheet.create({
     color: palette.warning,
     padding: 10,
     textAlign: 'center',
+  },
+  clarifyText:{
+    color: palette.textPrimary,
+    fontSize: 10,
+    backgroundColor: `${palette.warning}30`,
+    padding: 10,
+    margin: 10,
+    borderRadius: 5,
+    overflow: 'hidden',
+    
+  },
+  payButton: {
+    backgroundColor: palette.success,
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  payButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  markButton: {
+    backgroundColor: palette.warning,
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  markButtonText: {
+    color: palette.textPrimary,
+  },
+  undoButton: {
+    backgroundColor: palette.warning,
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  undoButtonText: {
+    color: palette.textPrimary,
   },
   
 });
