@@ -46,6 +46,7 @@ router.post('/addViolations', authMiddleware, async (req, res) => {
       const existingViolation = await Violation.findOne({
         summonsNumber: violationData.summons_number,
         user: userId
+        
       });
 
       if (!existingViolation) {
@@ -140,6 +141,82 @@ router.put('/undoMarkAsPaid/:violationId', authMiddleware, async (req, res) => {
   }
 });
 
+router.post('/updateMultiple', authMiddleware, async (req, res) => {
+  try {
+    const { violations, userId, vehicleId } = req.body;
+    console.log(vehicleId, "vehicleId");
+    // Validate input
+    if (!violations || !Array.isArray(violations)) {
+      return res.status(400).json({ message: 'Invalid violations data' });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    let updateResults = {
+      success: [],
+      failed: []
+    };
+
+    // Process each violation
+    await Promise.all(violations.map(async (violationData) => {
+      try {
+        // Map incoming data to schema
+        const mappedData = {
+          user: userId,
+          vehicle: vehicleId,
+          summonsNumber: violationData.summons_number,
+          issueDate: violationData.issue_date,
+          plate: violationData.plate,
+          violationTime: violationData.violation_time,
+          violation: violationData.violation,
+          fineAmount: violationData.fine_amount,
+          penaltyAmount: violationData.penalty_amount,
+          interestAmount: violationData.interest_amount,
+          reductionAmount: violationData.reduction_amount,
+          paymentAmount: violationData.payment_amount,
+          amountDue: violationData.amount_due,
+          precinct: violationData.precinct,
+          county: violationData.county,
+          issuingAgency: violationData.issuing_agency,
+          summonsImage: {
+            url: cleanSummonsImageUrl(violationData.summons_image.url), // Clean the URL before saving
+            description: violationData.summons_image.description,
+          },
+        };
+
+        const existingViolation = await Violation.findOne({
+          summonsNumber: violationData.summons_number,
+          user: userId
+        });
+
+        if (existingViolation) {
+          console.log(`Updating violation: ${violationData.summons_number}`);
+          const updatedViolation = await Violation.findOneAndUpdate(
+            { summonsNumber: violationData.summons_number, user: userId },
+            { $set: mappedData },
+            { new: true }
+          );
+          updateResults.success.push(updatedViolation);
+        } else {
+          console.log(`Adding new violation: ${violationData.summons_number}`);
+          const newViolation = new Violation({ ...mappedData, user: userId });
+          const savedViolation = await newViolation.save();
+          updateResults.success.push(savedViolation);
+        }
+      } catch (innerError) {
+        console.error(`Error processing individual violation data: ${violationData.summons_number}`, innerError);
+        updateResults.failed.push({ summonsNumber: violationData.summons_number, error: innerError });
+      }
+    }));
+
+    res.status(200).json({ message: 'Violations processed', results: updateResults });
+  } catch (error) {
+    console.error('Error processing violations:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
 
 
 

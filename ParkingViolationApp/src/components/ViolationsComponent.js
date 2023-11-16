@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useRef} from 'react';
-import { Linking, View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { Linking, View, Text, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl} from 'react-native';
 import { fetchViolations, requestViolationsUpdate } from '../../utils/violationsService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { REACT_APP_SERVER_URL } from '../config';
@@ -18,6 +18,8 @@ const ViolationsComponent = ({ vehicleId }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const flatListRef = useRef();
+  const [refreshing, setRefreshing] = useState(false);
+
 
   const totalTickets = violations.length;
   const totalPaid = violations.reduce((acc, violation) => acc + (violation.amountDue === 0 ? violation.fineAmount : 0), 0);
@@ -26,6 +28,7 @@ const ViolationsComponent = ({ vehicleId }) => {
   let firstTicketDate = sortedViolations.length > 0 ? new Date(sortedViolations[0].issueDate).toLocaleDateString() : 'N/A';
   let mostRecentTicketDate = sortedViolations.length > 0 ? new Date(sortedViolations[sortedViolations.length - 1].issueDate).toLocaleDateString() : 'N/A';
   const plate = violations.length > 0 ? violations[0].plate : 'N/A';
+
 
   const markTicketAsPaid = async (violationId) => {
     const violationToPay = violations.find(violation => violation._id === violationId);
@@ -151,22 +154,119 @@ const ViolationsComponent = ({ vehicleId }) => {
     getViolationsData();
   }, [vehicleId]);
 
-  const handleUpdate = async () => {
+  const onRefresh = async () => {
+    setRefreshing(true); 
     try {
-      setLoading(true);
-      await requestViolationsUpdate();
-      await getViolationsData();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      // Fetch updated data from NYC API
+      const updatedViolationsResponse = await fetch(`https://data.cityofnewyork.us/resource/nc67-uf89.json?plate=${plate}`);
+      const updatedViolationsData = await updatedViolationsResponse.json();
+      const userJson = await AsyncStorage.getItem('user');
+      if (!userJson) {
+        console.error("User not found in AsyncStorage.");
+        return;
+      }
+    
+      const user = JSON.parse(userJson);
+      const userId = user._id;
+      console.log("\n this is the userId", userId, "\n")
+      // Fetch current data from your database
+      const currentViolations = await fetchViolations(vehicleId, userId);
+  
+      // Prepare data for update
+      const violationsToUpdate = updatedViolationsData.map(updatedViolation => {
+        const existingViolation = currentViolations.find(v => v.summonsNumber === updatedViolation.summons_number);
+  
+        if (existingViolation) {
+          if (existingViolation.manuallyUpdated) {
+            // Check if the API data now marks it as paid
+            if (updatedViolation.amount_due === 0) {
+              return { ...updatedViolation, manuallyUpdated: false };
+            }
+            return null; 
+          }
+          return updatedViolation; 
+        } else {
+          return updatedViolation;
+        }
+      }).filter(v => v !== null);
+        // Update your database with the prepared data
+        const response = await updateViolationsWithFetched(violationsToUpdate);
+
+        // Extract the array of updated violations from the response
+        const updatedViolationsFromDB = response.results?.success;
+
+        // Check if updatedViolationsFromDB is an array
+        if (Array.isArray(updatedViolationsFromDB)) {
+          // Merge updated violations with existing ones
+          const mergedViolations = [...violations];
+          updatedViolationsFromDB.forEach(updatedViolation => {
+            const index = mergedViolations.findIndex(v => v._id === updatedViolation._id);
+            if (index !== -1) {
+              mergedViolations[index] = updatedViolation;
+            } else {
+              mergedViolations.push(updatedViolation);
+            }
+          });
+
+          // Sort the merged violations by issueDate in descending order
+          const sortedMergedViolations = mergedViolations.sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
+
+          // Update the state with the new, sorted data
+          setViolations(sortedMergedViolations);
+        } else {
+          console.error('Expected an array of updated violations, received:', updatedViolationsFromDB);
+        }
+
+        } catch (error) {
+        console.error('Error during refresh:', error);
+        } finally {
+        setRefreshing(false); // Stop the refresh indicator
+        }
+        };
+  
+  const updateViolationsWithFetched = async (violationsToUpdate) => {
+    const userJson = await AsyncStorage.getItem('user');
+    if (!userJson) {
+      console.error("User not found in AsyncStorage.");
+      return;
+    }
+  
+    const user = JSON.parse(userJson);
+    const userId = user._id;
+    try {
+      const response = await fetch(`${REACT_APP_SERVER_URL}/violations/updateMultiple`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          violations: violationsToUpdate,
+          userId: userId,
+          vehicleId: vehicleId
+        })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update violations in the database');
+      }
+  
+      const responseData = await response.json();
+      return responseData; // Or handle the response as needed
+    } catch (error) {
+      console.error('Error updating violations:', error);
+      throw error;
     }
   };
+  
 
   const renderSummary = () => {
     if (violations.length === 0) {
       return null;
     }
+
+
+    
   
     return (
       <View style={ViolationsComponentStyles.summaryContainer}>
@@ -262,7 +362,7 @@ const ViolationsComponent = ({ vehicleId }) => {
         style={ViolationsComponentStyles.undoButton}
         onPress={() => undoMarkAsPaid(item._id)}
       >
-        <Text style={ViolationsComponentStyles.undoButtonText}>Undo Mark as Paid</Text>
+        <Text style={ViolationsComponentStyles.undoButtonText}>Mark as Unpaid</Text>
       </TouchableOpacity>
     )}
 
@@ -275,13 +375,19 @@ const ViolationsComponent = ({ vehicleId }) => {
       {loading && <ActivityIndicator size="large" color={ViolationsComponentStyles.activityIndicatorColor} />}
       {error && <Text style={ViolationsComponentStyles.error}>{error}</Text>}
       {!loading && !violations.length && <Text style={ViolationsComponentStyles.noViolationsText}>No violations found. Please check the license plate.</Text>}
-      <FlatList
-  ref={flatListRef}
-  data={violations}
-  renderItem={renderItem}
-  keyExtractor={(item) => item._id}
-  ListHeaderComponent={renderSummary}
-/>
+            <FlatList
+       ref={flatListRef}
+        data={violations}
+        renderItem={renderItem}
+        keyExtractor={(item) => item._id}
+        ListHeaderComponent={renderSummary}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
+      />
       {pdfUrl && (
         <PDFViewerModal
           isVisible={isModalVisible}
