@@ -154,6 +154,12 @@ const ViolationsComponentStyles = StyleSheet.create({
     color: palette.textPrimary,
     marginLeft: 5,
   },
+  warningText: {
+    color: palette.warning,
+    padding: 10,
+    textAlign: 'center',
+  },
+  
 });
 
 export default ViolationsComponentStyles;

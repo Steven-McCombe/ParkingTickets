@@ -29,6 +29,8 @@ const palette = {
   // Border and Shadow Colors for Depth and Definition
   border: '#ced4da',     // Grey for borders and lines to define spaces without heavy contrast
   shadow: '#7f8c8d',     // Grey for shadows to give depth, used sparingly
+
+  
 };
 
 export default palette;

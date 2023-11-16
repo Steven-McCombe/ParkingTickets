@@ -1,13 +1,17 @@
-import React, { useEffect, useState, useRef} from 'react';
+import React, { useContext, useEffect, useState, useRef} from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { fetchViolations, requestViolationsUpdate } from '../../utils/violationsService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { REACT_APP_SERVER_URL } from '../config';
 import ViolationsComponentStyles from '../styles/ViolationsComponentStyles';
 import palette from '../styles/colorScheme';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import PDFViewerModal from './PDFViewerModal'; 
+import { AuthContext } from '../contexts/AuthContext';
+
 
 const ViolationsComponent = ({ vehicleId }) => {
+  const { user, token, loading: authLoading } = useContext(AuthContext);
   const [violations, setViolations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -23,6 +27,57 @@ const ViolationsComponent = ({ vehicleId }) => {
   let firstTicketDate = sortedViolations.length > 0 ? new Date(sortedViolations[0].issueDate).toLocaleDateString() : 'N/A';
   let mostRecentTicketDate = sortedViolations.length > 0 ? new Date(sortedViolations[sortedViolations.length - 1].issueDate).toLocaleDateString() : 'N/A';
   const plate = violations.length > 0 ? violations[0].plate : 'N/A';
+
+  const markTicketAsPaid = async (violationId) => {
+    const violationToPay = violations.find(violation => violation._id === violationId);
+    const totalDue = violationToPay ? (violationToPay.fineAmount - violationToPay.reductionAmount) : 0;
+  
+    const updatedViolationData = {
+      paymentAmount: totalDue,
+      amountDue: 0,
+      manuallyUpdated: true,
+      updatedAt: new Date().toISOString(),
+    };
+  
+    // Update local state
+    const updatedViolations = violations.map(violation => {
+      if (violation._id === violationId) {
+        return { ...violation, ...updatedViolationData };
+      }
+      return violation;
+    });
+  
+    setViolations(updatedViolations);
+  
+    // Update server
+    try {
+      const response = await fetch(`${REACT_APP_SERVER_URL}/violations/updateViolationStatus/${violationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedViolationData),
+      });
+  
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Error updating violation status');
+      }
+    } catch (error) {
+      console.error('Error updating violation status:', error);
+      // Optionally, revert the local state update in case of an error
+    }
+  };
+  
+  
+
+  const redirectToStatePaymentSite = (violation) => {
+    // Replace with the actual URL and logic to redirect
+    const paymentUrl = `https://a836-citypay.nyc.gov/citypay/Parking#!/by-plate-form`;
+    // Logic to open the URL in a browser or WebView
+  };
+  
 
 
   const viewTicket = (url) => {
@@ -154,11 +209,32 @@ const ViolationsComponent = ({ vehicleId }) => {
           <TouchableOpacity onPress={() => viewTicket(item.summonsImage.url)}>
             <Text style={ViolationsComponentStyles.linkText}>View Ticket</Text>
           </TouchableOpacity>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-
+          {item.amountDue > 0 && (
+          <>
+            <Text style={ViolationsComponentStyles.warningText}>This ticket may have already been paid. Click mark as paid to update it manually</Text>
+            <TouchableOpacity
+              style={ViolationsComponentStyles.submitButton}
+              onPress={() => markTicketAsPaid(item._id)}
+            >
+              <Text style={ViolationsComponentStyles.submitButtonText}>Mark as Paid</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={ViolationsComponentStyles.submitButton}
+              onPress={() => redirectToStatePaymentSite(item)}
+            >
+              <Text style={ViolationsComponentStyles.submitButtonText}>Pay Online</Text>
+            </TouchableOpacity>
+          </>
+        )}
+        {item.manuallyUpdated && (
+          <Text style={ViolationsComponentStyles.warningText}>
+            Note: This ticket was manually marked as paid. Please verify with official records.
+          </Text>
+        )}
+      </View>
+    )}
+  </TouchableOpacity>
+);
   return (
     <View style={ViolationsComponentStyles.container}>
       {loading && <ActivityIndicator size="large" color={ViolationsComponentStyles.activityIndicatorColor} />}

@@ -9,32 +9,6 @@ const { cleanSummonsImageUrl } = require('../helpers/cleanURL');
 
 const router = express.Router();
 
-// router.post('/getViolations', authMiddleware, async (req, res) => {
-//   // Assuming that the userId is stored in req.userId by the authMiddleware after token verification
-//   const userId = req.userId;
-
-//   try {
-//       const vehicles = await Vehicle.find({ user: userId });
-//       const violationsData = [];
-//       for (const vehicle of vehicles) {
-//           const { licensePlate, licenseType, state } = vehicle;
-//           const response = await axios.get(`https://data.cityofnewyork.us/resource/nc67-uf89.json?$plate='${licensePlate}' AND license_type='${licenseType}' AND state='${state}'`);
-          
-//           // Here we map each violation data from the API to include the userId
-//           const userViolations = response.data.map(violation => ({
-//               ...violation,
-//               user: userId, // Add the userId to each violation object
-//               vehicle: vehicle._id // Also include the vehicleId if necessary
-//           }));
-
-//           violationsData.push(...userViolations);
-//       }
-//       res.json(violationsData);
-//   } catch (error) {
-//       console.error(error);
-//       res.status(500).send('Server error');
-//   }
-// });
 
 // routes/vehicleRoutes.js
 router.get('/violations', async (req, res) => {
@@ -109,6 +83,37 @@ router.post('/addViolations', authMiddleware, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
+// PUT route to update violation status
+router.put('/updateViolationStatus/:violationId', authMiddleware, async (req, res) => {
+  const { violationId } = req.params;
+  const { paymentAmount, amountDue, manuallyUpdated, updatedAt } = req.body;
+
+  if (!violationId) {
+    return res.status(400).json({ message: 'Violation ID is required.' });
+  }
+
+  try {
+    const violation = await Violation.findById(violationId);
+    if (!violation) {
+      return res.status(404).json({ message: 'Violation not found.' });
+    }
+
+    // Update the violation fields
+    violation.paymentAmount = paymentAmount;
+    violation.amountDue = amountDue;
+    violation.manuallyUpdated = manuallyUpdated;
+    violation.updatedAt = new Date(updatedAt);
+
+    await violation.save();
+    res.json({ message: 'Violation updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+});
+
+
 
 
 module.exports = router;

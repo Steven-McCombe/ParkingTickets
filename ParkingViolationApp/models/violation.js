@@ -43,6 +43,10 @@ const ViolationSchema = new Schema({
     updatedAt: {
         type: Date,
     },
+    manuallyUpdated: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const Violation = mongoose.model('Violation', ViolationSchema);
